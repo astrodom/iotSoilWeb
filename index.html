@@ -58,8 +58,8 @@
             };
             // make API call with parameters and use promises to get response
             fetch(" https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev", requestOptions)
-            //.then(response => response.text())
-            .then((response) => response.json())
+            .then(response => response.text())
+            //.then((response) => response.json())
             .then(result => alert(JSON.parse(result).body))
             .catch(error => console.log('error', error));
         }
