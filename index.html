@@ -48,7 +48,7 @@
             // add content type header to object
             myHeaders.append("Content-Type", "application/json");
             // using built in JSON utility package turn object to string and store in a variable
-            var raw = JSON.stringify({"input_id":base,"input_start":exponent});
+            var raw = JSON.stringify({"input_id":input_id,"input_start":input_start});
             // create a JSON object with parameters for API call and store in a variable
             var requestOptions = {
                 method: 'POST',
@@ -68,9 +68,9 @@
 <body>
     <h1>TO THE POWER OF MATH!</h1>
 	<form>
-        <label>Base number:</label>
+        <label> id:</label>
         <input type="text" id="base">
-        <label>...to the power of:</label>
+        <label> start date:</label>
         <input type="text" id="exponent">
         <!-- set button onClick method to call function we defined passing input values as parameters -->
         <button type="button" onclick="callAPI(document.getElementById('base').value,document.getElementById('exponent').value)">CALCULATE</button>
