@@ -69,10 +69,10 @@
 	<form>
         <label>start date:</label>
         <input type="text" id="input_start">
-        <label>...to the power of:</label>
+        <label> device id of sensor :</label>
         <input type="text" id="input_id">
         <!-- set button onClick method to call function we defined passing input values as parameters -->
-        <button type="button" onclick="callAPI(document.getElementById('start').value,document.getElementById('input_id').value)">CALCULATE</button>
+        <button type="button" onclick="callAPI(document.getElementById('input_start').value,document.getElementById('input_id').value)">CALCULATE</button>
     </form>
 </body>
 </html>
