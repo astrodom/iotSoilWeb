@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -65,7 +66,14 @@
     </script>
 </head>
 <body>
-  <h1>GET Data</h1>
-  <div id="data"></div>
+    <h1>TO THE POWER OF MATH!</h1>
+	<form>
+        <label> id:</label>
+        <input type="text" id="input_id">
+        <label> start date:</label>
+        <input type="text" id="input_start">
+        <!-- set button onClick method to call function we defined passing input values as parameters -->
+        <button type="button" onclick="callAPI(document.getElementById('input_id').value,document.getElementById('input_start').value)">CALCULATE</button>
+    </form>
 </body>
 </html>
