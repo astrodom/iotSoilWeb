@@ -1,34 +1,68 @@
 <html>
 <head>
-  <script>
-    // XMLHttpRequest 객체 생성
-    var xhr = new XMLHttpRequest();
-
-    // api url 설정
-    var url = "https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev";
-
-    // GET 방식으로 요청
-    xhr.open("GET", url);
-
-    // 응답이 도착했을 때 실행할 콜백 함수 등록
-    xhr.onload = function() {
-      // 응답이 성공적이면
-      if (xhr.status === 200) {
-        // 응답을 json 형식으로 파싱
-        var data = JSON.parse(xhr.responseText);
-        // data를 html 요소에 삽입
-        document.getElementById("data").innerHTML = JSON.stringify(data);
-      }
-      // 응답이 실패하면
-      else {
-        // 에러 메시지 출력
-        console.error("Request failed: " + xhr.status);
-      }
-    };
-
-    // 요청 전송
-    xhr.send();
-  </script>
+    <meta charset="UTF-8">
+    <title> soil sensor data from aws ddb</title>
+    <!-- Styling for the client UI -->
+    <style>
+    h1 {
+        color: #FFFFFF;
+        font-family: system-ui;
+		margin-left: 20px;
+        }
+	body {
+        background-color: #222629;
+        }
+    label {
+        color: #86C232;
+        font-family: system-ui;
+        font-size: 20px;
+        margin-left: 20px;
+		margin-top: 20px;
+        }
+     button {
+        background-color: #86C232;
+		border-color: #86C232;
+		color: #FFFFFF;
+        font-family: system-ui;
+        font-size: 20px;
+		font-weight: bold;
+        margin-left: 30px;
+		margin-top: 20px;
+		width: 140px;
+        }
+	 input {
+        color: #222629;
+        font-family: system-ui;
+        font-size: 20px;
+        margin-left: 10px;
+		margin-top: 20px;
+		width: 100px;
+        }
+    </style>
+    <script>
+        // callAPI function that takes the base and exponent numbers as parameters
+        var callAPI = (base,exponent)=>{
+            // instantiate a headers object
+            var myHeaders = new Headers();
+            // add content type header to object
+            myHeaders.append("Content-Type", "application/json");
+            // using built in JSON utility package turn object to string and store in a variable
+            var raw = JSON.stringify({"input_id":input_id,"input_start":input_start});
+            // create a JSON object with parameters for API call and store in a variable
+            var requestOptions = {
+                method: 'get',
+                headers: myHeaders,
+                body: raw,
+                redirect: 'follow'
+            };
+            // make API call with parameters and use promises to get response
+            fetch(" https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev", requestOptions)
+            //.then(response => response.text())
+            .then((response) => response.json())
+            .then(result => alert(JSON.parse(result).body))
+            .catch(error => console.log('error', error));
+        }
+    </script>
 </head>
 <body>
   <h1>GET Data</h1>
