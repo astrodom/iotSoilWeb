@@ -64,15 +64,66 @@
         }
     </script>
 </head>
+
+
+ 
+
 <body>
-    <h1>TO THE POWER OF MATH!</h1>
+    <h1> Soil Sensor Data</h1>
 	<form>
         <label>start date:</label>
-        <input type="text" id="input_start">
+        <input type="text" id="input_start" value = "2023.05.23">
         <label> device id of sensor :</label>
-        <input type="text" id="input_id">
+        <input type="text" id="input_id" value ='22096028'>
         <!-- set button onClick method to call function we defined passing input values as parameters -->
         <button type="button" onclick="callAPI(document.getElementById('input_start').value,document.getElementById('input_id').value)">CALCULATE</button>
     </form>
 </body>
+
+
+
+<div>
+  <canvas id="myChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+
+
+  
+
+  (async function() {
+    const data = [
+      { year: 2010, count: 10 },
+      { year: 2011, count: 20 },
+      { year: 2012, count: 15 },
+      { year: 2013, count: 25 },
+      { year: 2014, count: 22 },
+      { year: 2015, count: 30 },
+      { year: 2016, count: 28 },
+    ];
+  
+    new Chart(
+      document.getElementById('acquisitions'),
+      {
+        type: 'bar',
+        data: {
+          labels: data.map(row => row.year),
+          datasets: [
+            {
+              label: 'Acquisitions by year',
+              data: data.map(row => row.count)
+            }
+          ]
+        }
+      }
+    );
+  })();
+
+</script>
+
+
+
 </html>
