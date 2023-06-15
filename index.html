@@ -53,13 +53,15 @@
             var requestOptions = {
                 method: 'POST',
                 headers: myHeaders,
-                body: raw,
+                //body: raw,
+                body: JSON.stringify(this.obj),
                 redirect: 'follow'
             };
             // make API call with parameters and use promises to get response
             fetch("https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev", requestOptions)
             .then(response => response.text())
             .then(result => alert(JSON.parse(result).body))
+            .then(res => console.log(res))
             .catch(error => console.log('error', error));
         }
     </script>
