@@ -10,8 +10,13 @@
         font-family: system-ui;
 		margin-left: 20px;
         }
+    h2 {
+        color: #eded13;
+        font-family: system-ui;
+		margin-left: 20px;
+        }    
 	body {
-        background-color: #222629;
+        background-color: #6c777f;
         }
     label {
         color: #86C232;
@@ -40,46 +45,113 @@
 		width: 100px;
         }
     </style>
-    <script>
-        // callAPI function that takes the base and exponent numbers as parameters
-        var callAPI = (input_start,input_id)=>{
-            // instantiate a headers object
-            var myHeaders = new Headers();
-            // add content type header to object
-            myHeaders.append("Content-Type", "application/json");
-            // using built in JSON utility package turn object to string and store in a variable
-            var raw = JSON.stringify({"input_start":input_start,"device_id ":input_id});
-            // create a JSON object with parameters for API call and store in a variable
-            var requestOptions = {
-                method: 'POST',
-                headers: myHeaders,
-                body: raw,
-                redirect: 'follow'
-            };
-            // make API call with parameters and use promises to get response
-            fetch("https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev", requestOptions)
-            .then(response => response.json())
-            .then(response => consloe.log(response.json()))
-            .then(result => alert(JSON.parse(result).body))
-            .catch(error => console.log('error', error));
-        }
-    </script>
+
 </head>
-ß
 
 <body>
     <h1> Soil Sensor Data</h1>
-	<form>ß
+	<form>
         <label>start date:</label>
         <input type="text" id="input_start" value = "2023.05.23">
         <label> device id of sensor :</label>
         <input type="text" id="input_id" value ='22096028'>
         <!-- set button onClick method to call function we defined passing input values as parameters -->
-        <button type="button" onclick="callAPI(document.getElementById('input_start').value,document.getElementById('input_id').value)">CALCULATE</button>
+        <button type="button" onclick="callReadDataAPI(document.getElementById('input_start').value,document.getElementById('input_id').value)">CALCULATE</button>
     </form>
+
+    <h2> test sensor data </h2>
+
 </body>
 
 
+<!-- <script>
+    // callAPI function that takes the base and exponent numbers as parameters
+    let callReadDataAPI = (input_start,input_id)=>{
+        // instantiate a headers object
+        let myHeaders = new Headers();
+        // add content type header to object
+        myHeaders.append("Content-Type", "application/json");
+        // using built in JSON utility package turn object to string and store in a variable
+        let raw = JSON.stringify({"input_start":input_start,"device_id ":input_id});
+        // create a JSON object with parameters for API call and store in a variable
+        let requestOptions = {
+            method: 'POST',
+            //headers: myHeaders,
+            headers: {
+                    "Content-Type": "application/json",
+                    // 'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+            body : raw, // body data type must match "Content-Type" header
+            redirect: 'follow'
+        };
+  
 
+        // make API call with parameters and use promises to get response
+        fetch("https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev", requestOptions)
+        .then(response => { 
+            return response.json();
+        })
+        .then (data => {
+            
+            console.log(data); // 전체 객체 출력
+            console.log(data.type); // type 속성 출력
+            console.log(data.joke); // joke 속성 출력 (type이 single일 경우)
+            console.log(data.setup); // setup 속성 출력 (type이 twopart일 경우)
+            console.log(data.delivery); // delivery 속성 출력 (type이 twopart일 경우)
+            const markup = `<h2>${data.type}</h2>`;
+            document.querySelector('h2').insertAdjacentHTML('beforeend', markup);
+        })
+        //.then(response => console.log(response))
+        //.then(result => alert(JSON.parse(result).body))
+        .catch(error => {
+            console.log('error', error)
+        });
+    }
+</script> -->
+
+<script>
+    
+// Example POST method implementation:
+let callReadDataAPI = (input_start,input_id)=>{
+        async function postData(url = "", data = {}) {
+        // Default options are marked with *
+        const response = await fetch(url, {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            mode: "cors", // no-cors, *cors, same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: "same-origin", // include, *same-origin, omit
+            headers: {
+            "Content-Type": "application/json",
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            redirect: "follow", // manual, *follow, error
+            referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
+        });
+        return response.json(); // parses JSON response into native JavaScript objects
+        }
+
+        postData("https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev", { input_id: '22096028' })
+        .then((data) => {
+            const dataSensor = JSON.stringify(data);
+            let _body = data.body;
+            console.log(_body);
+            //console.log(dataSensor);
+            let list = document.createElement("ul"); // ul 요소 생성
+            for (var key in _body) { // 객체의 각 속성에 대해 반복
+                let item = document.createElement("li"); // li 요소 생성
+                item.textContent = key + ": "+'[temp]  ' + _body[key]["temp"] +'   [vwc] '+ _body[key]["vwc"]; // li 요소의 텍스트 설정
+                list.appendChild(item); // ul 요소에 li 요소 추가
+            }
+            
+
+            console.log(list); // <ul><li>name: John</li><li>age: 30</li><li>city: New York</li></ul>
+            document.body.appendChild(list); // body에 list 추가
+
+        });
+    }
+
+</script>
 
 </html>
