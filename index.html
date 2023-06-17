@@ -45,8 +45,35 @@
 		width: 100px;
         }
     </style>
-
+    <script>
+        // callAPI function that takes the base and exponent numbers as parameters
+        var callAPI = (input_start,input_id)=>{
+            // instantiate a headers object
+            var myHeaders = new Headers();
+            // add content type header to object
+            myHeaders.append("Content-Type", "application/json");
+            // using built in JSON utility package turn object to string and store in a variable
+            var raw = JSON.stringify({"input_start":input_start,"device_id ":input_id});
+            // create a JSON object with parameters for API call and store in a variable
+            var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                //body: raw,
+                body: JSON.stringify(this.obj),
+                redirect: 'follow'
+            };
+            // make API call with parameters and use promises to get response
+            fetch("https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev", requestOptions)
+            .then(response => response.text())
+            .then(result => alert(JSON.parse(result).body))
+            .then(res => console.log(res))
+            .catch(error => console.log('error', error));
+        }
+    </script>
 </head>
+
+
+ 
 
 <body>
     <h1> Soil Sensor Data</h1>
@@ -141,7 +168,7 @@ let callReadDataAPI = (input_start,input_id)=>{
             let list = document.createElement("ul"); // ul 요소 생성
             for (var key in _body) { // 객체의 각 속성에 대해 반복
                 let item = document.createElement("li"); // li 요소 생성
-                item.textContent = key + ": "+'[temp]  ' + _body[key]["temp"] +'   [vwc] '+ _body[key]["vwc"]; // li 요소의 텍스트 설정
+                item.textContent = key + ": "+'  [temp]  ' + _body[key]["temp"] +'   [vwc] '+ _body[key]["vwc"]; // li 요소의 텍스트 설정
                 list.appendChild(item); // ul 요소에 li 요소 추가
             }
             
