@@ -15,7 +15,7 @@
         h2 {
             color: #eded13;
             font-family: system-ui;
-            margin-left: 20px;
+            margin-left: 12px;
         }
 
         body {
@@ -54,7 +54,7 @@
         ul {
             color: #eded13;
             font-family: system-ui;
-            margin-left: 20px;
+            margin-left: 8px;
         }
     </style>
     <script>
@@ -70,8 +70,8 @@
             var requestOptions = {
                 method: 'POST',
                 headers: myHeaders,
-                //body: raw,
-                body: JSON.stringify(this.obj),
+                body: raw,
+                //body: JSON.stringify(this.obj),
                 redirect: 'follow'
             };
             // make API call with parameters and use promises to get response
@@ -84,147 +84,86 @@
     </script>
 </head>
 
-
-
-
 <body>
     <h1> Soil Sensor Data</h1>
     <form>
         <label>start date:</label>
-        <input type="text" id="input_start" value="2023.05.23">
+        <input type="text" id="start_date" value="2023.06.01">
         <label> device id of sensor :</label>
-        <input type="text" id="input_id" value='22096028'>
+        <input type="text" id="device_id" value='22096028'>
         <!-- set button onClick method to call function we defined passing input values as parameters -->
         <button type="button"
-            onclick="callReadDataAPI(document.getElementById('input_start').value,document.getElementById('input_id').value)">CALCULATE</button>
+            onclick="callReadDataAPI(document.getElementById('start_date').value,
+                                     document.getElementById('device_id').value)">CALCULATE</button>
     </form>
-
-    <h2> test sensor data </h2>
-
 </body>
 
-
-<!-- <script>
-    // callAPI function that takes the base and exponent numbers as parameters
-    let callReadDataAPI = (input_start,input_id)=>{
-        // instantiate a headers object
-        let myHeaders = new Headers();
-        // add content type header to object
-        myHeaders.append("Content-Type", "application/json");
-        // using built in JSON utility package turn object to string and store in a variable
-        let raw = JSON.stringify({"input_start":input_start,"device_id ":input_id});
-        // create a JSON object with parameters for API call and store in a variable
-        let requestOptions = {
-            method: 'POST',
-            //headers: myHeaders,
-            headers: {
-                    "Content-Type": "application/json",
-                    // 'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            // 'Content-Type': 'application/x-www-form-urlencoded',
-            body : raw, // body data type must match "Content-Type" header
-            redirect: 'follow'
-        };
-  
-
-        // make API call with parameters and use promises to get response
-        fetch("https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev", requestOptions)
-        .then(response => { 
-            return response.json();
-        })
-        .then (data => {
-            
-            console.log(data); // 전체 객체 출력
-            console.log(data.type); // type 속성 출력
-            console.log(data.joke); // joke 속성 출력 (type이 single일 경우)
-            console.log(data.setup); // setup 속성 출력 (type이 twopart일 경우)
-            console.log(data.delivery); // delivery 속성 출력 (type이 twopart일 경우)
-            const markup = `<h2>${data.type}</h2>`;
-            document.querySelector('h2').insertAdjacentHTML('beforeend', markup);
-        })
-        //.then(response => console.log(response))
-        //.then(result => alert(JSON.parse(result).body))
-        .catch(error => {
-            console.log('error', error)
-        });
-    }
-</script> -->
-
 <script>
+    function getInputValue() {
+        let textInputIdElement = document.getElementById("device_id")
+        console.log("[Input] textInputDateStartElement ", textInputIdElement);
+        let textInputDateStartElement = document.getElementById("start_date")
+        console.log("[Input] textInputDateStartElement ", textInputDateStartElement);
+    }
 
     // Example POST method implementation:
     let callReadDataAPI = (input_start, input_id) => {
-        async function postData(url = "", data = {}) {
+
+        async function postData(url = "", my_method ="", data = {}) {
             // Default options are marked with *
+
             const response = await fetch(url, {
-                method: "POST", // *GET, POST, PUT, DELETE, etc.
+                //method: "POST", // *GET, POST, PUT, DELETE, etc.
+                method: my_method,
                 mode: "cors", // no-cors, *cors, same-origin
                 cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
                 credentials: "same-origin", // include, *same-origin, omit
                 headers: {
-                    "Content-Type": "application/json",
-                    // 'Content-Type': 'application/x-www-form-urlencoded',
+                    //"Content-Type": "application/json",
+                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 redirect: "follow", // manual, *follow, error
                 referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
                 body: JSON.stringify(data), // body data type must match "Content-Type" header
             });
+
             return response.json(); // parses JSON response into native JavaScript objects
         }
 
-        postData("https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev", { input_id: '22096028' })
+     
+
+        postData("https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev", "POST", 
+                { "start_date": input_start, "device_id": input_id })
             .then((data) => {
                 const dataSensor = JSON.stringify(data);
                 let _body = data.body;
-                console.log(_body);
-                //console.log(dataSensor);
-                let list = document.createElement("ul"); // ul 요소 생성
-                for (let key in _body) { // 객체의 각 속성에 대해 반복
-                    let item = document.createElement("li"); // li 요소 생성
-                    item.textContent = key + ": " + '  [temp]  ' + _body[key]["temp"] + '   [vwc] ' + _body[key]["vwc"]; // li 요소의 텍스트 설정
-                    list.appendChild(item); // ul 요소에 li 요소 추가
+                //console.log(_body);
+                let list = document.createElement("ul"); 
+                for (let key in _body) { 
+                    let item = document.createElement("li"); 
+                    item.textContent = key + ": " + '  [temp]  ' + _body[key]["temp"] + ', [vwc] ' + _body[key]["vwc"]; // li 요소의 텍스트 설정
+                    list.appendChild(item); 
                 }
 
-
-                console.log(list); // <ul><li>name: John</li><li>age: 30</li><li>city: New York</li></ul>
                 document.body.appendChild(list); // body에 list 추가
-
                 const ctx = document.getElementById('myChart');
-                // let chartLables = Object.keys(_body);
-                // console.log(chartLables);
-
-                // let chartDataTemp = []
-                // for (let key in _body){
-                //     let _temp = _body[key]["temp"];
-                //     chartDataTemp.append(_temp);
-
-                // }
-
-
-                // JSON 객체를 문자열로 변환
-                let str = JSON.stringify(_body);
-
-                // 문자열을 다시 JSON 객체로 변환
-                let newObj = JSON.parse(str);
-
-                // temp 속성과 vwc 속성을 담을 배열 생성
-                let keyArray = Object.keys(_body);
+           
+                
+                let str = JSON.stringify(_body);  // JSON 객체를 문자열로 변환
+                let newObj = JSON.parse(str); // 문자열을 다시 JSON 객체로 변환
+                let keyArray = Object.keys(_body);// temp 속성과 vwc 속성을 담을 배열 생성
                 let tempArray = [];
                 let vwcArray = [];
 
                 // JSON 객체의 각 속성에 접근하며 배열에 값 추가
                 for (let key in newObj) {
-                    
                     tempArray.push(newObj[key].temp);
                     vwcArray.push(newObj[key].vwc);
                 }
 
-                // 결과 출력
                 console.log(keyArray);
                 console.log(tempArray); // ["21.125", "21.125", "21.125"]
                 console.log(vwcArray); // ["46.400000000000006", "46", "45.7"]
-
-
 
                 new Chart(ctx, {
                     type: 'line',
@@ -264,31 +203,6 @@
 <div>
     <canvas id="myChart"></canvas>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-//   const ctx = document.getElementById('myChart');
-
-//   new Chart(ctx, {
-//     type: 'line',
-//     data: {
-//       labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-//       datasets: [{
-//         label: 'temp and vwc data of soil sensor',
-//         data: [12, 19, 3, 5, 2, 3],
-//         borderWidth: 1
-//       }]
-//     },
-//     options: {
-//       scales: {
-//         y: {
-//           beginAtZero: true
-//         }
-//       }
-//     }
-//   });
-
-</script>
 
 </html>
