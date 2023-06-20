@@ -30,9 +30,7 @@
             margin-top: 20px;
            
         }
-        .small {
-
-        }
+    
 
         button {
             background-color: #86C232;
@@ -69,7 +67,7 @@
     <h1> HDC-Labs 10F Floor Soil Sensor Data Monitoring </h1>
     <form>
 
-        <label style="font-size: 15px"> start & end date  입력 방법 : yyyy.mm.dd </label>
+        <label style="font-size: 15px"> start , end date  입력 방법 : yyyy.mm.dd </label>
         <br>
         <label style="font-size: 15px"> id: 22096027 원형 화단 ,   </label>
         <label style="font-size: 15px"> id: 22096028 lounge 앞 화단   </label>
@@ -106,6 +104,8 @@
 
             const formattedDate = `${year}.${month < 10 ? `0${month}` : month}.${day < 10 ? `0${day}` : day}`;
             document.querySelector('#end_date').value = formattedDate;
+            const formattedDate1stDay = `${year}.${month < 10 ? `0${month}` : month}.${day >0 ? `0${day-day+1}` : day}`;
+            document.querySelector('#start_date').value = formattedDate1stDay;
 
 
         </script>
@@ -218,13 +218,24 @@
                         scales: {
                             y: {
                                 beginAtZero: true
-                            }
-                        }
+                            },
+                            yAxes: [{
+                                ticks: {
+                                    fontColor: 'white',
+                                    lineWidth: 2
+                                }
+                            }],
+                            xAxes: [{
+                                ticks: {
+                                    fontColor: 'white'
+                                }
+                            }]
                     }
-                    
-                });
-
+                }
+                
             });
+
+        });
 
 
     }
