@@ -19,7 +19,7 @@
         }
 
         body {
-            background-color: #020202;
+            background-color: #030303e8;
         }
 
         label {
@@ -32,6 +32,9 @@
            
 =======
 >>>>>>> parent of 847c8cf (add in end_date input)
+        }
+        .small {
+
         }
 
         button {
@@ -60,17 +63,6 @@
             font-family: system-ui;
             margin-left: 8px;
         }
-
-        label {
-            /* display: block; */
-            font: 1rem 'Fira Sans', sans-serif;
-        }
-        
-        /* input, */
-        /* label {
-            margin: 0.8rem 0.8;
-        } */
-
     </style>
     <script>
         // callAPI function that takes the base and exponent numbers as parameters
@@ -114,22 +106,13 @@
         <br>
     
 
-        <label for="start">Start date 테스트:</label>
-        <input type="date" id="start" name="trip-start"
-            value="2023-06-20"
-            min="2023-01-01" max="2030-12-31">
-
-      
-        <br>
-
-
         <label>start date:</label>
-        <input type="text" id="start_date" value="2023.06.01"> <br>
-        <label>end date: &nbsp;</label>
-        <input type="text" id="end_date" value=""> <br>
+        <input type="text" id="start_date" value="2023.06.01">
+        <label>end date:</label>
+        <input type="text" id="end_date" value="">
         
         <label> sensor id :</label>
-        <input type="text" id="device_id" value='22096028'> <br> 
+        <input type="text" id="device_id" value='22096028'> 
 
 
 =======
@@ -193,10 +176,9 @@
                 }
 
                 document.body.appendChild(list); // body에 list 추가
-                //const ctx = document.getElementById('soilDataChart');
+                const ctx = document.getElementById('myChart');
+           
                 
-                const ctx = document.getElementById('soilDataChart').getContext('2d');
-         
                 let str = JSON.stringify(_body);  // JSON 객체를 문자열로 변환
                 let newObj = JSON.parse(str); // 문자열을 다시 JSON 객체로 변환
                 let keyArray = Object.keys(_body);// temp 속성과 vwc 속성을 담을 배열 생성
@@ -212,10 +194,6 @@
                 console.log(keyArray);
                 console.log(tempArray); // ["21.125", "21.125", "21.125"]
                 console.log(vwcArray); // ["46.400000000000006", "46", "45.7"]
-
-                let gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                gradient.addColorStop(0, 'rgba(224, 195, 155, 1)');   
-                gradient.addColorStop(1, 'rgba(100, 100, 0, 0)');    
 
                 new Chart(ctx, {
                     type: 'line',
@@ -244,6 +222,7 @@
                     }
                     
                 });
+
             });
 
 
@@ -252,8 +231,8 @@
 </script>
 
 <div>
-    <canvas id="soilDataChart"></canvas>
+    <canvas id="myChart"></canvas>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
 </html>
