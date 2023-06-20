@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>HDC Labs Soil Sensor Monitorying Board</title>
+    <title>To the Power of Math!</title>
     <!-- Styling for the client UI -->
     <style>
         h1 {
@@ -28,7 +28,10 @@
             font-size: 20px;
             margin-left: 20px;
             margin-top: 20px;
+<<<<<<< HEAD
            
+=======
+>>>>>>> parent of 847c8cf (add in end_date input)
         }
 
         button {
@@ -36,27 +39,26 @@
             border-color: #86C232;
             color: #FFFFFF;
             font-family: system-ui;
-            font-size: 15px;
-            /* font-weight: bold; */
-            margin-left: 10px;
-            margin-top: 10px;
-            width: 100px;
+            font-size: 20px;
+            font-weight: bold;
+            margin-left: 30px;
+            margin-top: 20px;
+            width: 140px;
         }
-
 
         input {
             color: #222629;
             font-family: system-ui;
-            font-size: 15px;
-            margin-left: 20px;
+            font-size: 20px;
+            margin-left: 10px;
             margin-top: 20px;
             width: 100px;
         }
 
         ul {
-            color: #c6c60a;
+            color: #eded13;
             font-family: system-ui;
-            margin-left: 5px;
+            margin-left: 8px;
         }
 
         label {
@@ -70,12 +72,37 @@
         } */
 
     </style>
-
+    <script>
+        // callAPI function that takes the base and exponent numbers as parameters
+        var callAPI = (input_start, input_id) => {
+            // instantiate a headers object
+            var myHeaders = new Headers();
+            // add content type header to object
+            myHeaders.append("Content-Type", "application/json");
+            // using built in JSON utility package turn object to string and store in a variable
+            var raw = JSON.stringify({ "input_start": input_start, "device_id ": input_id });
+            // create a JSON object with parameters for API call and store in a variable
+            var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw,
+                //body: JSON.stringify(this.obj),
+                redirect: 'follow'
+            };
+            // make API call with parameters and use promises to get response
+            fetch("https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev", requestOptions)
+                .then(response => response.text())
+                .then(result => alert(JSON.parse(result).body))
+                .then(res => console.log(res))
+                .catch(error => console.log('error', error));
+        }
+    </script>
 </head>
 
 <body>
-    <h1> HDC-Labs 10F Floor Soil Sensor Data Monitoring </h1>
+    <h1> Soil Sensor Data</h1>
     <form>
+<<<<<<< HEAD
 
         <label style="font-size: 15px"> start & end date  입력 방법 : yyyy.mm.dd </label>
         <br>
@@ -105,47 +132,29 @@
         <input type="text" id="device_id" value='22096028'> <br> 
 
 
+=======
+        <label>start date:</label>
+        <input type="text" id="start_date" value="2023.06.01">
+        <label> device id of sensor :</label>
+        <input type="text" id="device_id" value='22096028'>
+>>>>>>> parent of 847c8cf (add in end_date input)
         <!-- set button onClick method to call function we defined passing input values as parameters -->
-        <button type="submit">init</button>
         <button type="button"
             onclick="callReadDataAPI(document.getElementById('start_date').value,
-                                     document.getElementById('end_date').value,   
-                                     document.getElementById('device_id').value)"> query data</button>
-        <br>
-        
-        
-        <br>
-        <script>
-            const date = new Date();
-            const year = date.getFullYear();
-            const month = date.getMonth() + 1;
-            const day = date.getDate();
-
-            const formattedDate = `${year}.${month < 10 ? `0${month}` : month}.${day < 10 ? `0${day}` : day}`;
-            document.querySelector('#end_date').value = formattedDate;
-
-
-        </script>
-        <br>
-        <br>
+                                     document.getElementById('device_id').value)">CALCULATE</button>
     </form>
-
 </body>
 
 <script>
     function getInputValue() {
         let textInputIdElement = document.getElementById("device_id")
         console.log("[Input] textInputDateStartElement ", textInputIdElement);
-
         let textInputDateStartElement = document.getElementById("start_date")
         console.log("[Input] textInputDateStartElement ", textInputDateStartElement);
-
-        let textInputDateEndElement = document.getElementById("end_date")
-        console.log("[Input] textInputDateEndElement ", textInputDateEndElement);
     }
 
     // Example POST method implementation:
-    let callReadDataAPI = (input_start, input_end, input_id) => {
+    let callReadDataAPI = (input_start, input_id) => {
 
         async function postData(url = "", my_method ="", data = {}) {
             // Default options are marked with *
@@ -168,20 +177,10 @@
             return response.json(); // parses JSON response into native JavaScript objects
         }
 
-        const date = new Date(document.querySelector('#end_date').value);
-        date.setDate(date.getDate() + 1);
-
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
-        const day = date.getDate();
-
-        const formattedDate = `${year}.${month < 10 ? `0${month}` : month}.${day < 10 ? `0${day}` : day}`;
-        const input_end_next_day = formattedDate;
-
-
+     
 
         postData("https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev", "POST", 
-                { "start_date": input_start, "end_date": input_end_next_day, "device_id": input_id })
+                { "start_date": input_start, "device_id": input_id })
             .then((data) => {
                 const dataSensor = JSON.stringify(data);
                 let _body = data.body;
