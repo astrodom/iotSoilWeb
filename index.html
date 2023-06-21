@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>HDC Labs Soil Sensor Monitorying Board</title>
+    <title>HDC Labs R&D   Soil Sensor Monitorying Board</title>
     <!-- Styling for the client UI -->
     <style>
         h1 {
@@ -67,15 +67,19 @@
     <h1> HDC-Labs 10F Floor Soil Sensor Data Monitoring </h1>
     <form>
 
-        <label style="font-size: 15px"> start , end date  입력 방법 : yyyy.mm.dd </label>
+        <label style="font-size: 15px">  input date format  : yyyy.mm.dd </label>
         <br>
-        <label style="font-size: 15px"> id: 22096027 원형 화단 ,   </label>
-        <label style="font-size: 15px"> id: 22096028 lounge 앞 화단   </label>
+        <label style="font-size: 15px">  sensor id: 22096027 원형 화단, </label>
+        <label style="font-size: 15px">  22096028 lounge 앞 화단   </label>
         <br>
-        <label style="font-size: 15px"> 새로운 데이터 query할때는 init 버튼 눌러주세요   </label>
+        <label style="font-size: 15px">  How to use: init → input data → query  </label>
         
         <br>
+        <br>
+
     
+        <div style="width: 65%; margin-left: 1%; border-top: 1px solid grey; overflow: hidden;"></div>
+        
 
         <label>start date:</label>
         <input type="text" id="start_date" value="2023.06.01">
@@ -93,8 +97,9 @@
                                      document.getElementById('end_date').value,   
                                      document.getElementById('device_id').value)"> query data</button>
         <br>
-        
-        
+        <br>
+        <div style="width: 65%; margin-left: 1%; border-top: 1px solid grey; overflow: hidden;"></div>
+
         <br>
         <script>
             const date = new Date();
