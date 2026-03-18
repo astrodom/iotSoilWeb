@@ -1,149 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HDC Labs Soil Sensor Monitoring</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="./app.js" defer></script>
-</head>
-<body>
-    <div class="page-shell">
-        <header class="hero">
-            <div class="hero-copy">
-                <p class="eyebrow">HDC Labs 10F</p>
-                <h1>Soil Sensor Monitoring Board</h1>
-                <p class="hero-text">
-                    AWS API Gateway에서 토양 센서 데이터를 조회해 온도와 체적 수분 함량을 한 화면에서 확인합니다.
-                    조회 종료일은 하루를 자동 보정해 마지막 날짜까지 포함되도록 처리합니다.
-                </p>
-            </div>
-            <aside class="hero-panel">
-                <p class="panel-title">Preset Sensors</p>
-                <ul class="sensor-list">
-                    <li><strong>22096027</strong><span>원형 화단</span></li>
-                    <li><strong>22096028</strong><span>lounge 앞 화단</span></li>
-                </ul>
-                <p class="panel-note">원격 API 응답 형식이 바뀌면 차트와 요약 카드가 함께 갱신됩니다.</p>
-            </aside>
-        </header>
-
-        <main class="dashboard">
-            <section class="card controls-card">
-                <div class="section-heading">
-                    <div>
-                        <p class="section-kicker">Query Controls</p>
-                        <h2>데이터 조회</h2>
-                    </div>
-                    <span id="statusBadge" class="status-badge">Ready</span>
-                </div>
-
-                <form id="queryForm" class="controls-grid" novalidate>
-                    <label class="field">
-                        <span>시작일</span>
-                        <input type="date" id="startDate" name="startDate" required>
-                    </label>
-
-                    <label class="field">
-                        <span>종료일</span>
-                        <input type="date" id="endDate" name="endDate" required>
-                    </label>
-
-                    <label class="field">
-                        <span>센서 프리셋</span>
-                        <select id="sensorPreset" name="sensorPreset">
-                            <option value="22096028">22096028 | lounge 앞 화단</option>
-                            <option value="22096027">22096027 | 원형 화단</option>
-                            <option value="">직접 입력</option>
-                        </select>
-                    </label>
-
-                    <label class="field">
-                        <span>센서 ID</span>
-                        <input type="text" id="deviceId" name="deviceId" inputmode="numeric" autocomplete="off" placeholder="예: 22096028" required>
-                    </label>
-
-                    <div class="actions">
-                        <button type="submit" id="queryButton" class="primary-button">조회</button>
-                        <button type="button" id="resetButton" class="secondary-button">초기화</button>
-                    </div>
-                </form>
-
-                <p id="formMessage" class="form-message">
-                    날짜는 브라우저에서 안전하게 처리한 뒤 API 형식인 <code>yyyy.mm.dd</code>로 변환됩니다.
-                </p>
-            </section>
-
-            <section class="metrics-grid" aria-label="Summary metrics">
-                <article class="metric-card">
-                    <p class="metric-label">Samples</p>
-                    <p id="sampleCount" class="metric-value">0</p>
-                    <p class="metric-caption">현재 조회된 레코드 수</p>
-                </article>
-                <article class="metric-card">
-                    <p class="metric-label">Latest Temp</p>
-                    <p id="latestTemp" class="metric-value">-</p>
-                    <p class="metric-caption">가장 최근 온도</p>
-                </article>
-                <article class="metric-card">
-                    <p class="metric-label">Latest VWC</p>
-                    <p id="latestVwc" class="metric-value">-</p>
-                    <p class="metric-caption">가장 최근 수분 함량</p>
-                </article>
-                <article class="metric-card">
-                    <p class="metric-label">Average Temp</p>
-                    <p id="averageTemp" class="metric-value">-</p>
-                    <p class="metric-caption">전체 구간 평균</p>
-                </article>
-            </section>
-
-            <section class="content-grid">
-                <article class="card chart-card">
-                    <div class="section-heading">
-                        <div>
-                            <p class="section-kicker">Trend View</p>
-                            <h2>센서 추이</h2>
-                        </div>
-                        <p id="querySummary" class="summary-text">데이터를 조회하면 차트와 상세 테이블이 표시됩니다.</p>
-                    </div>
-                    <div class="chart-wrap">
-                        <canvas id="sensorChart" aria-label="Temperature and VWC chart"></canvas>
-                    </div>
-                </article>
-
-                <article class="card feed-card">
-                    <div class="section-heading">
-                        <div>
-                            <p class="section-kicker">Data Feed</p>
-                            <h2>상세 측정값</h2>
-                        </div>
-                    </div>
-                    <div id="emptyState" class="empty-state">
-                        <p>조회 전입니다. 날짜와 센서 ID를 선택한 뒤 데이터를 불러오세요.</p>
-                    </div>
-                    <div class="table-wrap" id="tableWrap" hidden>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th scope="col">Timestamp</th>
-                                    <th scope="col">Temperature</th>
-                                    <th scope="col">VWC</th>
-                                </tr>
-                            </thead>
-                            <tbody id="resultsTableBody"></tbody>
-                        </table>
-                    </div>
-                </article>
-            </section>
-        </main>
-    </div>
-
-    <noscript>
-        <div class="noscript-warning">이 페이지는 JavaScript가 필요합니다.</div>
-    </noscript>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HDC Labs Bio Interface</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Oxanium:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
