@@ -26,10 +26,10 @@ function TelemetryChart({ data }) {
         <CartesianGrid stroke="rgba(64, 154, 197, 0.12)" vertical={false} />
         <XAxis
           dataKey="timestamp"
-          tick={{ fill: "rgba(199, 246, 255, 0.74)", fontSize: 11 }}
+          tick={{ fill: "#3a3024", fontSize: 12, fontWeight: 700 }}
           tickFormatter={formatTimestampTick}
           minTickGap={24}
-          stroke="rgba(73, 201, 255, 0.24)"
+          stroke="rgba(77, 58, 33, 0.18)"
         />
         <YAxis
           yAxisId="temp"
