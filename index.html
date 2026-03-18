@@ -1,255 +1,149 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>HDC Labs R&D   Soil Sensor Monitorying Board</title>
-    <!-- Styling for the client UI -->
-    <style>
-        h1 {
-            color: #FFFFFF;
-            font-family: system-ui;
-            margin-left: 20px;
-        }
-
-        h2 {
-            color: #eded13;
-            font-family: system-ui;
-            margin-left: 12px;
-        }
-
-        body {
-            background-color: #030303e8;
-        }
-
-        label {
-            color: #86C232;
-            font-family: system-ui;
-            font-size: 20px;
-            margin-left: 20px;
-            margin-top: 20px;
-           
-        }
-    
-
-        button {
-            background-color: #86C232;
-            border-color: #86C232;
-            color: #FFFFFF;
-            font-family: system-ui;
-            font-size: 15px;
-            /* font-weight: bold; */
-            margin-left: 10px;
-            margin-top: 10px;
-            width: 100px;
-        }
-
-
-        input {
-            color: #222629;
-            font-family: system-ui;
-            font-size: 15px;
-            margin-left: 20px;
-            margin-top: 20px;
-            width: 100px;
-        }
-
-        ul {
-            color: #c6c60a;
-            font-family: system-ui;
-            margin-left: 5px;
-        }
-    </style>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDC Labs Soil Sensor Monitoring</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="./app.js" defer></script>
 </head>
-
 <body>
-    <h1> HDC-Labs 10F Floor Soil Sensor Data Monitoring </h1>
-    <form>
+    <div class="page-shell">
+        <header class="hero">
+            <div class="hero-copy">
+                <p class="eyebrow">HDC Labs 10F</p>
+                <h1>Soil Sensor Monitoring Board</h1>
+                <p class="hero-text">
+                    AWS API Gateway에서 토양 센서 데이터를 조회해 온도와 체적 수분 함량을 한 화면에서 확인합니다.
+                    조회 종료일은 하루를 자동 보정해 마지막 날짜까지 포함되도록 처리합니다.
+                </p>
+            </div>
+            <aside class="hero-panel">
+                <p class="panel-title">Preset Sensors</p>
+                <ul class="sensor-list">
+                    <li><strong>22096027</strong><span>원형 화단</span></li>
+                    <li><strong>22096028</strong><span>lounge 앞 화단</span></li>
+                </ul>
+                <p class="panel-note">원격 API 응답 형식이 바뀌면 차트와 요약 카드가 함께 갱신됩니다.</p>
+            </aside>
+        </header>
 
-        <label style="font-size: 15px">  input date format  : yyyy.mm.dd </label>
-        <br>
-        <label style="font-size: 15px">  sensor id: 22096027 원형 화단, </label>
-        <label style="font-size: 15px">  22096028 lounge 앞 화단   </label>
-        <br>
-        <label style="font-size: 15px">  How to use: init → input data → query  </label>
-        
-        <br>
-        <br>
+        <main class="dashboard">
+            <section class="card controls-card">
+                <div class="section-heading">
+                    <div>
+                        <p class="section-kicker">Query Controls</p>
+                        <h2>데이터 조회</h2>
+                    </div>
+                    <span id="statusBadge" class="status-badge">Ready</span>
+                </div>
 
-    
-        <div style="width: 65%; margin-left: 1%; border-top: 1px solid grey; overflow: hidden;"></div>
-        
+                <form id="queryForm" class="controls-grid" novalidate>
+                    <label class="field">
+                        <span>시작일</span>
+                        <input type="date" id="startDate" name="startDate" required>
+                    </label>
 
-        <label>start date:</label>
-        <input type="text" id="start_date" value="2023.06.01">
-        <label>end date:</label>
-        <input type="text" id="end_date" value="">
-        
-        <label> sensor id :</label>
-        <input type="text" id="device_id" value='22096028'> 
+                    <label class="field">
+                        <span>종료일</span>
+                        <input type="date" id="endDate" name="endDate" required>
+                    </label>
 
+                    <label class="field">
+                        <span>센서 프리셋</span>
+                        <select id="sensorPreset" name="sensorPreset">
+                            <option value="22096028">22096028 | lounge 앞 화단</option>
+                            <option value="22096027">22096027 | 원형 화단</option>
+                            <option value="">직접 입력</option>
+                        </select>
+                    </label>
 
-        <!-- set button onClick method to call function we defined passing input values as parameters -->
-        <button type="submit">init</button>
-        <button type="button"
-            onclick="callReadDataAPI(document.getElementById('start_date').value,
-                                     document.getElementById('end_date').value,   
-                                     document.getElementById('device_id').value)"> query data</button>
-        <br>
-        <br>
-        <div style="width: 65%; margin-left: 1%; border-top: 1px solid grey; overflow: hidden;"></div>
+                    <label class="field">
+                        <span>센서 ID</span>
+                        <input type="text" id="deviceId" name="deviceId" inputmode="numeric" autocomplete="off" placeholder="예: 22096028" required>
+                    </label>
 
-        <br>
-        <script>
-            const date = new Date();
-            const year = date.getFullYear();
-            const month = date.getMonth() + 1;
-            const day = date.getDate();
+                    <div class="actions">
+                        <button type="submit" id="queryButton" class="primary-button">조회</button>
+                        <button type="button" id="resetButton" class="secondary-button">초기화</button>
+                    </div>
+                </form>
 
-            const formattedDate = `${year}.${month < 10 ? `0${month}` : month}.${day < 10 ? `0${day}` : day}`;
-            document.querySelector('#end_date').value = formattedDate;
-            const formattedDate1stDay = `${year}.${month < 10 ? `0${month}` : month}.${day >0 ? `0${day-day+1}` : day}`;
-            document.querySelector('#start_date').value = formattedDate1stDay;
+                <p id="formMessage" class="form-message">
+                    날짜는 브라우저에서 안전하게 처리한 뒤 API 형식인 <code>yyyy.mm.dd</code>로 변환됩니다.
+                </p>
+            </section>
 
+            <section class="metrics-grid" aria-label="Summary metrics">
+                <article class="metric-card">
+                    <p class="metric-label">Samples</p>
+                    <p id="sampleCount" class="metric-value">0</p>
+                    <p class="metric-caption">현재 조회된 레코드 수</p>
+                </article>
+                <article class="metric-card">
+                    <p class="metric-label">Latest Temp</p>
+                    <p id="latestTemp" class="metric-value">-</p>
+                    <p class="metric-caption">가장 최근 온도</p>
+                </article>
+                <article class="metric-card">
+                    <p class="metric-label">Latest VWC</p>
+                    <p id="latestVwc" class="metric-value">-</p>
+                    <p class="metric-caption">가장 최근 수분 함량</p>
+                </article>
+                <article class="metric-card">
+                    <p class="metric-label">Average Temp</p>
+                    <p id="averageTemp" class="metric-value">-</p>
+                    <p class="metric-caption">전체 구간 평균</p>
+                </article>
+            </section>
 
-        </script>
-        <br>
-        <br>
-    </form>
+            <section class="content-grid">
+                <article class="card chart-card">
+                    <div class="section-heading">
+                        <div>
+                            <p class="section-kicker">Trend View</p>
+                            <h2>센서 추이</h2>
+                        </div>
+                        <p id="querySummary" class="summary-text">데이터를 조회하면 차트와 상세 테이블이 표시됩니다.</p>
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="sensorChart" aria-label="Temperature and VWC chart"></canvas>
+                    </div>
+                </article>
 
+                <article class="card feed-card">
+                    <div class="section-heading">
+                        <div>
+                            <p class="section-kicker">Data Feed</p>
+                            <h2>상세 측정값</h2>
+                        </div>
+                    </div>
+                    <div id="emptyState" class="empty-state">
+                        <p>조회 전입니다. 날짜와 센서 ID를 선택한 뒤 데이터를 불러오세요.</p>
+                    </div>
+                    <div class="table-wrap" id="tableWrap" hidden>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Timestamp</th>
+                                    <th scope="col">Temperature</th>
+                                    <th scope="col">VWC</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTableBody"></tbody>
+                        </table>
+                    </div>
+                </article>
+            </section>
+        </main>
+    </div>
+
+    <noscript>
+        <div class="noscript-warning">이 페이지는 JavaScript가 필요합니다.</div>
+    </noscript>
 </body>
-
-<script>
-    function getInputValue() {
-        let textInputIdElement = document.getElementById("device_id")
-        console.log("[Input] textInputDateStartElement ", textInputIdElement);
-
-        let textInputDateStartElement = document.getElementById("start_date")
-        console.log("[Input] textInputDateStartElement ", textInputDateStartElement);
-
-        let textInputDateEndElement = document.getElementById("end_date")
-        console.log("[Input] textInputDateEndElement ", textInputDateEndElement);
-    }
-
-    // Example POST method implementation:
-    let callReadDataAPI = (input_start, input_end, input_id) => {
-
-        async function postData(url = "", my_method ="", data = {}) {
-            // Default options are marked with *
-
-            const response = await fetch(url, {
-                //method: "POST", // *GET, POST, PUT, DELETE, etc.
-                method: my_method,
-                mode: "cors", // no-cors, *cors, same-origin
-                cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-                credentials: "same-origin", // include, *same-origin, omit
-                headers: {
-                    //"Content-Type": "application/json",
-                     'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                redirect: "follow", // manual, *follow, error
-                referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-                body: JSON.stringify(data), // body data type must match "Content-Type" header
-            });
-
-            return response.json(); // parses JSON response into native JavaScript objects
-        }
-
-        const date = new Date(document.querySelector('#end_date').value);
-        date.setDate(date.getDate() + 1);
-
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
-        const day = date.getDate();
-
-        const formattedDate = `${year}.${month < 10 ? `0${month}` : month}.${day < 10 ? `0${day}` : day}`;
-        const input_end_next_day = formattedDate;
-
-
-
-        postData("https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev", "POST", 
-                { "start_date": input_start, "end_date": input_end_next_day, "device_id": input_id })
-            .then((data) => {
-                const dataSensor = JSON.stringify(data);
-                let _body = data.body;
-                //console.log(_body);
-                let list = document.createElement("ul"); 
-                for (let key in _body) { 
-                    let item = document.createElement("li"); 
-                    item.textContent = key + ": " + '  [temp]  ' + _body[key]["temp"] + ', [vwc] ' + _body[key]["vwc"]; // li 요소의 텍스트 설정
-                    list.appendChild(item); 
-                }
-
-                document.body.appendChild(list); // body에 list 추가
-                const ctx = document.getElementById('myChart');
-           
-                
-                let str = JSON.stringify(_body);  // JSON 객체를 문자열로 변환
-                let newObj = JSON.parse(str); // 문자열을 다시 JSON 객체로 변환
-                let keyArray = Object.keys(_body);// temp 속성과 vwc 속성을 담을 배열 생성
-                let tempArray = [];
-                let vwcArray = [];
-
-                // JSON 객체의 각 속성에 접근하며 배열에 값 추가
-                for (let key in newObj) {
-                    tempArray.push(newObj[key].temp);
-                    vwcArray.push(newObj[key].vwc);
-                }
-
-                console.log(keyArray);
-                console.log(tempArray); // ["21.125", "21.125", "21.125"]
-                console.log(vwcArray); // ["46.400000000000006", "46", "45.7"]
-
-                new Chart(ctx, {
-                    type: 'line',
-                    data: 
-                        {
-                            labels: keyArray,
-                            datasets: [{
-                                label: 'temp data ',
-                                data: tempArray,
-                                borderWidth: 1
-                                },
-                                {
-                                label: 'vwc data ',
-                                data: vwcArray,
-                                borderWidth: 1
-                            }
-                            ]
-                        }
-                    ,
-                    options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            },
-                            yAxes: [{
-                                ticks: {
-                                    fontColor: 'white',
-                                    lineWidth: 2
-                                }
-                            }],
-                            xAxes: [{
-                                ticks: {
-                                    fontColor: 'white'
-                                }
-                            }]
-                    }
-                }
-                
-            });
-
-        });
-
-
-    }
-
-</script>
-
-<div>
-    <canvas id="myChart"></canvas>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </html>
