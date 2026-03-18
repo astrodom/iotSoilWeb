@@ -1,6 +1,7 @@
 import { Suspense, lazy, startTransition, useDeferredValue, useEffect, useState } from "react";
 
 const API_ENDPOINT = "https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev";
+const CURRENT_YEAR = new Date().getFullYear();
 const SENSOR_PRESETS = [
   { id: "22096028", label: "lounge 앞 화단" },
   { id: "22096027", label: "원형 화단" },
@@ -10,6 +11,9 @@ const QUICK_RANGES = [
   { key: "7d", label: "최근 7일" },
   { key: "30d", label: "최근 30일" },
   { key: "month", label: "이번 달" },
+  { key: "thisYear", label: "올해" },
+  { key: "lastYear", label: `${CURRENT_YEAR - 1}년` },
+  { key: "twoYearsAgo", label: `${CURRENT_YEAR - 2}년` },
 ];
 const VIEW_WINDOWS = [
   { value: "24", label: "최근 24건" },
@@ -315,7 +319,7 @@ function App() {
         <div className="panel-head panel-head-tight">
           <div>
             <p className="section-kicker">Trend View</p>
-            <h2>센서 추이</h2>
+            <h2>센서 데이터</h2>
           </div>
           <div className="trend-toolbar">
             <label className="field compact-field">
@@ -574,7 +578,7 @@ function validateForm(form) {
 function buildQuickRange(range) {
   const today = new Date();
   let startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-  const endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  let endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
   if (range === "today") {
     startDate = new Date(endDate);
@@ -582,6 +586,14 @@ function buildQuickRange(range) {
     startDate = addDaysToDate(endDate, -6);
   } else if (range === "30d") {
     startDate = addDaysToDate(endDate, -29);
+  } else if (range === "thisYear") {
+    startDate = new Date(today.getFullYear(), 0, 1);
+  } else if (range === "lastYear") {
+    startDate = new Date(today.getFullYear() - 1, 0, 1);
+    endDate = new Date(today.getFullYear() - 1, 11, 31);
+  } else if (range === "twoYearsAgo") {
+    startDate = new Date(today.getFullYear() - 2, 0, 1);
+    endDate = new Date(today.getFullYear() - 2, 11, 31);
   }
 
   return {
