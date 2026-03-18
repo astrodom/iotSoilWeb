@@ -521,6 +521,129 @@ select {
   line-height: 1.7;
 }
 
+.monthly-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: 18px;
+  margin-top: 16px;
+  align-items: start;
+}
+
+.month-summary-list {
+  display: grid;
+  gap: 12px;
+  max-height: 860px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.month-card {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 253, 248, 0.92);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.month-card:hover,
+.month-card.is-active {
+  transform: translateY(-1px);
+  border-color: rgba(37, 95, 71, 0.3);
+  box-shadow: 0 14px 28px rgba(66, 48, 24, 0.08);
+}
+
+.month-card.is-active {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(243, 237, 225, 0.96));
+}
+
+.month-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.month-card-head strong {
+  display: block;
+  font-family: "Oxanium", sans-serif;
+  font-size: 1.18rem;
+}
+
+.month-card-head .season-tag {
+  margin-top: 8px;
+}
+
+.month-card-head em {
+  font-style: normal;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.month-card p {
+  margin-top: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.month-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.month-metrics div {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(37, 95, 71, 0.06);
+}
+
+.month-metrics dt {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.month-metrics dd {
+  margin: 8px 0 0;
+  font-family: "Oxanium", sans-serif;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+.month-detail-panel {
+  min-width: 0;
+}
+
+.month-detail-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.month-detail-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  color: var(--muted);
+}
+
+.month-detail-meta span:not(.season-tag) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(37, 95, 71, 0.08);
+}
+
 .table-wrap {
   overflow: auto;
   margin-top: 16px;
@@ -549,6 +672,29 @@ td {
 
 tbody tr:nth-child(even):not(.season-divider) {
   background: rgba(255, 255, 255, 0.48);
+}
+
+.compact-table-wrap {
+  max-height: 860px;
+}
+
+.compact-table {
+  min-width: 640px;
+}
+
+.compact-table th,
+.compact-table td {
+  padding: 8px 12px;
+}
+
+.compact-table td {
+  font-size: 0.93rem;
+}
+
+.compact-table .season-tag {
+  min-height: 26px;
+  padding: 0 8px;
+  font-size: 0.78rem;
 }
 
 .season-divider td {
@@ -664,6 +810,16 @@ tbody tr:nth-child(even):not(.season-divider) {
   .season-strip {
     flex-direction: column;
   }
+
+  .monthly-layout,
+  .month-detail-head {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .month-detail-meta {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 720px) {
@@ -694,6 +850,11 @@ tbody tr:nth-child(even):not(.season-divider) {
   .trend-toolbar {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .monthly-layout,
+  .month-metrics {
+    grid-template-columns: 1fr;
   }
 
   table {

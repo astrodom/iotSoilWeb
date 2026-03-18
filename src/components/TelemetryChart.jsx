@@ -33,14 +33,34 @@ function TelemetryChart({ data }) {
         />
         <YAxis
           yAxisId="temp"
-          tick={{ fill: "#49c9ff", fontSize: 11 }}
-          stroke="rgba(73, 201, 255, 0.24)"
+          width={68}
+          tick={{ fill: "#2d5974", fontSize: 12, fontWeight: 700 }}
+          stroke="rgba(77, 58, 33, 0.18)"
+          label={{
+            value: "Temperature (°C)",
+            angle: -90,
+            position: "insideLeft",
+            fill: "#2d5974",
+            fontSize: 12,
+            fontWeight: 700,
+            dx: -6,
+          }}
         />
         <YAxis
           yAxisId="vwc"
           orientation="right"
-          tick={{ fill: "#b5ff46", fontSize: 11 }}
-          stroke="rgba(181, 255, 70, 0.24)"
+          width={62}
+          tick={{ fill: "#426734", fontSize: 12, fontWeight: 700 }}
+          stroke="rgba(77, 58, 33, 0.18)"
+          label={{
+            value: "VWC (%)",
+            angle: 90,
+            position: "insideRight",
+            fill: "#426734",
+            fontSize: 12,
+            fontWeight: 700,
+            dx: 6,
+          }}
         />
         <Tooltip content={<ChartTooltip />} />
         <Legend wrapperStyle={{ color: "#c7f6ff", fontSize: "12px" }} />

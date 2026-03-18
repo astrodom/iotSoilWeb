@@ -46,6 +46,7 @@ function App() {
   const [lastPayload, setLastPayload] = useState(null);
   const [viewWindow, setViewWindow] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedMonthKey, setSelectedMonthKey] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const deferredSearchTerm = useDeferredValue(searchTerm);
@@ -76,7 +77,21 @@ function App() {
   const insights = deriveInsights(rows, visibleRows, lastPayload, viewWindow, deferredSearchTerm);
   const seasonBands = buildSeasonBands(visibleRows);
   const seasonSummaries = summarizeSeasons(visibleRows);
-  const seasonGroups = groupRowsBySeason(visibleRows);
+  const monthlySummaries = buildMonthlySummaries(visibleRows);
+  const monthlySummaryKeys = monthlySummaries.map((item) => item.key).join("|");
+  const selectedMonth =
+    monthlySummaries.find((item) => item.key === selectedMonthKey) ?? monthlySummaries[0] ?? null;
+
+  useEffect(() => {
+    if (!monthlySummaries.length) {
+      setSelectedMonthKey("");
+      return;
+    }
+
+    setSelectedMonthKey((current) =>
+      monthlySummaries.some((item) => item.key === current) ? current : monthlySummaries[0].key,
+    );
+  }, [monthlySummaryKeys]);
 
   const handleFormChange = (field) => (event) => {
     const value = event.target.value;
@@ -131,6 +146,7 @@ function App() {
     setLastPayload(null);
     setViewWindow("all");
     setSearchTerm("");
+    setSelectedMonthKey("");
     setStatus({ label: "READY", tone: "" });
     setMessage({
       text: "기본 조회 설정으로 되돌렸습니다.",
@@ -216,8 +232,8 @@ function App() {
           <p className="eyebrow">HDC Labs / Soil Monitoring</p>
           <h1>Sensor Trend Dashboard</h1>
           <p className="topbar-copy">
-            센서 추이를 메인으로 보고, 아래에서 계절 기준으로 상세 측정값을 바로 확인할 수 있게
-            단순한 구조로 재배치했습니다.
+            센서 데이터를 메인 차트로 보고, 아래에서 월별 요약과 선택한 달의 상세 측정값을 함께
+            확인할 수 있게 재구성했습니다.
           </p>
         </div>
         <div className="topbar-status">
@@ -429,23 +445,92 @@ function App() {
 
         <p className="support-text">{insights.resultsHint}</p>
 
-        {seasonGroups.length ? (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">계절</th>
-                  <th scope="col">Timestamp</th>
-                  <th scope="col">Temperature</th>
-                  <th scope="col">VWC</th>
-                </tr>
-              </thead>
-              <tbody>
-                {seasonGroups.map((group, groupIndex) => (
-                  <SeasonGroupRows key={`${group.season.key}-${groupIndex}`} group={group} />
-                ))}
-              </tbody>
-            </table>
+        {monthlySummaries.length ? (
+          <div className="monthly-layout">
+            <div className="month-summary-list" role="list" aria-label="월별 요약">
+              {monthlySummaries.map((month) => (
+                <button
+                  key={month.key}
+                  type="button"
+                  className={`month-card ${selectedMonth?.key === month.key ? "is-active" : ""}`.trim()}
+                  onClick={() => setSelectedMonthKey(month.key)}
+                >
+                  <div className="month-card-head">
+                    <div>
+                      <strong>{month.label}</strong>
+                      <span className={`season-tag ${month.season.accentClass}`.trim()}>
+                        {month.season.label}
+                      </span>
+                    </div>
+                    <em>{month.rows.length}건</em>
+                  </div>
+                  <p>{month.rangeText}</p>
+                  <dl className="month-metrics">
+                    <div>
+                      <dt>Temperature</dt>
+                      <dd>{month.tempBand}</dd>
+                    </div>
+                    <div>
+                      <dt>VWC</dt>
+                      <dd>{month.vwcBand}</dd>
+                    </div>
+                  </dl>
+                </button>
+              ))}
+            </div>
+
+            <div className="month-detail-panel">
+              {selectedMonth ? (
+                <>
+                  <div className="month-detail-head">
+                    <div>
+                      <p className="section-kicker">Selected Month</p>
+                      <h3>{selectedMonth.label}</h3>
+                    </div>
+                    <div className="month-detail-meta">
+                      <span className={`season-tag ${selectedMonth.season.accentClass}`.trim()}>
+                        {selectedMonth.season.label}
+                      </span>
+                      <span>{selectedMonth.rows.length}건</span>
+                      <span>{selectedMonth.rangeText}</span>
+                    </div>
+                  </div>
+
+                  <div className="table-wrap compact-table-wrap">
+                    <table className="compact-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">계절</th>
+                          <th scope="col">Timestamp</th>
+                          <th scope="col">Temperature</th>
+                          <th scope="col">VWC</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedMonth.rows.map((row) => {
+                          const season = getSeasonForTimestamp(row.timestamp);
+
+                          return (
+                            <tr key={`${selectedMonth.key}-${row.timestamp}`}>
+                              <td>
+                                <span className={`season-tag ${season.accentClass}`.trim()}>
+                                  {season.label}
+                                </span>
+                              </td>
+                              <td>{row.timestamp}</td>
+                              <td>{formatMetric(row.temp, "°C")}</td>
+                              <td>{formatMetric(row.vwc, "%")}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              ) : (
+                <EmptyPanel message="선택된 월이 없습니다." />
+              )}
+            </div>
           </div>
         ) : (
           <EmptyPanel message={insights.tableEmptyMessage} />
@@ -462,32 +547,6 @@ function MetricPanel({ label, value, subtext }) {
       <p className="metric-value">{value}</p>
       <p className="metric-subtext">{subtext}</p>
     </article>
-  );
-}
-
-function SeasonGroupRows({ group }) {
-  return (
-    <>
-      <tr className={`season-divider ${group.season.accentClass}`.trim()}>
-        <td colSpan="4">
-          <div className="season-divider-content">
-            <strong>{group.season.label}</strong>
-            <span>{`${formatShortDate(group.start)} - ${formatShortDate(group.end)}`}</span>
-            <span>{`${group.rows.length}건`}</span>
-          </div>
-        </td>
-      </tr>
-      {group.rows.map((row) => (
-        <tr key={`${group.season.key}-${row.timestamp}`}>
-          <td>
-            <span className={`season-tag ${group.season.accentClass}`.trim()}>{group.season.label}</span>
-          </td>
-          <td>{row.timestamp}</td>
-          <td>{formatMetric(row.temp, "°C")}</td>
-          <td>{formatMetric(row.vwc, "%")}</td>
-        </tr>
-      ))}
-    </>
   );
 }
 
@@ -531,8 +590,8 @@ function deriveInsights(rows, visibleRows, lastPayload, viewWindow, searchTerm) 
       latestCapture: "-",
       avgSampleGap: "-",
       currentView: "0 / 0 rows",
-      summary: "데이터를 조회하면 센서 추이와 상세 측정값이 여기에 표시됩니다.",
-      resultsHint: "조회 후 아래 리스트에서 계절별 데이터를 확인할 수 있습니다.",
+      summary: "데이터를 조회하면 센서 데이터 차트와 상세 측정값이 여기에 표시됩니다.",
+      resultsHint: "조회 후 아래에서 월별 최소~최대와 선택한 달 상세 데이터를 볼 수 있습니다.",
       chartEmptyMessage: "조회 전입니다. 날짜와 센서 ID를 선택한 뒤 데이터를 불러오세요.",
       tableEmptyMessage: "조회 전입니다. 날짜와 센서 ID를 선택한 뒤 데이터를 불러오세요.",
     };
@@ -549,7 +608,7 @@ function deriveInsights(rows, visibleRows, lastPayload, viewWindow, searchTerm) 
     avgSampleGap: `평균 간격 ${calculateAverageGap(rows)}`,
     currentView: `${visibleRows.length} / ${rows.length} rows`,
     summary: `${resolveSensorName(lastPayload.device_id)} | ${lastPayload.start_date} - ${toApiDate(lastPayload.rawEndDate)} | 보기: ${viewLabel}${filterLabel}`,
-    resultsHint: `${visibleRows.length}건이 현재 리스트에 표시됩니다. 계절 헤더와 계절 컬럼을 함께 확인하세요.`,
+    resultsHint: `${visibleRows.length}건 기준으로 월별 최소~최대 요약을 만들었습니다. 원하는 달을 눌러 우측 상세 목록을 확인하세요.`,
     chartEmptyMessage: visibleRows.length
       ? "데이터를 조회하면 차트가 여기에 표시됩니다."
       : emptyFilteredMessage,
@@ -657,32 +716,57 @@ function summarizeSeasons(rows) {
   }));
 }
 
-function groupRowsBySeason(rows) {
+function buildMonthlySummaries(rows) {
   if (!rows.length) {
     return [];
   }
 
-  const groups = [];
+  const monthMap = new Map();
 
   rows.forEach((row) => {
-    const season = getSeasonForTimestamp(row.timestamp);
-    const current = groups[groups.length - 1];
+    const key = getMonthKey(row.timestamp);
 
-    if (current && current.season.key === season.key) {
-      current.rows.push(row);
-      current.end = row.timestamp;
+    if (!key) {
       return;
     }
 
-    groups.push({
-      season,
+    const existing = monthMap.get(key);
+
+    if (existing) {
+      existing.rows.push(row);
+      if (compareTimestamps(row.timestamp, existing.start) < 0) {
+        existing.start = row.timestamp;
+      }
+      if (compareTimestamps(row.timestamp, existing.end) > 0) {
+        existing.end = row.timestamp;
+      }
+      return;
+    }
+
+    monthMap.set(key, {
+      key,
+      label: formatMonthLabel(key),
+      season: getSeasonForTimestamp(row.timestamp),
       rows: [row],
       start: row.timestamp,
       end: row.timestamp,
     });
   });
 
-  return groups;
+  return Array.from(monthMap.values())
+    .map((item) => {
+      const temps = item.rows.map((row) => row.temp).filter(isValidSummaryNumber);
+      const vwcs = item.rows.map((row) => row.vwc).filter(isValidSummaryNumber);
+
+      return {
+        ...item,
+        rows: [...item.rows].sort((left, right) => compareTimestamps(right.timestamp, left.timestamp)),
+        rangeText: `${formatShortDate(item.start)} - ${formatShortDate(item.end)}`,
+        tempBand: formatBand(temps, "°C"),
+        vwcBand: formatBand(vwcs, "%"),
+      };
+    })
+    .sort((left, right) => right.key.localeCompare(left.key));
 }
 
 function getSeasonForTimestamp(timestamp) {
@@ -715,6 +799,11 @@ function formatShortDate(timestamp) {
   return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(
     date.getDate(),
   ).padStart(2, "0")}`;
+}
+
+function formatMonthLabel(monthKey) {
+  const [year, month] = monthKey.split("-");
+  return `${year}년 ${Number(month)}월`;
 }
 
 function formatDateInputValue(date) {
@@ -875,6 +964,22 @@ function compareTimestamps(left, right) {
   return left.localeCompare(right);
 }
 
+function getMonthKey(timestamp) {
+  const parsed = parseTimestamp(timestamp);
+
+  if (parsed !== null) {
+    const date = new Date(parsed);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  }
+
+  const match = timestamp.match(/(\d{4})[.\-/](\d{1,2})/);
+  if (!match) {
+    return "";
+  }
+
+  return `${match[1]}-${String(Number(match[2])).padStart(2, "0")}`;
+}
+
 function toNumber(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
@@ -882,6 +987,10 @@ function toNumber(value) {
 
 function isPresentNumber(value) {
   return value !== null;
+}
+
+function isValidSummaryNumber(value) {
+  return value !== null && value > 0;
 }
 
 function escapeCsv(value) {
