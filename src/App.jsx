@@ -231,10 +231,7 @@ function App() {
         <div>
           <p className="eyebrow">HDC Labs / Soil Monitoring</p>
           <h1>Sensor Trend Dashboard</h1>
-          <p className="topbar-copy">
-            센서 데이터를 메인 차트로 보고, 아래에서 월별 요약과 선택한 달의 상세 측정값을 함께
-            확인할 수 있게 재구성했습니다.
-          </p>
+          <p className="topbar-copy">적용 현장: HDC Labs 타워, 10F 옥상 정원 , 센서 2EA</p>
         </div>
         <div className="topbar-status">
           <span className="status-label">AWS API Gateway</span>

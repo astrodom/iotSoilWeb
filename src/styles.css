@@ -83,10 +83,35 @@ select {
 }
 
 .topbar {
+  position: relative;
+  overflow: hidden;
   display: flex;
   justify-content: space-between;
   gap: 20px;
   align-items: flex-start;
+  border-color: rgba(183, 243, 191, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(206, 255, 177, 0.28), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(129, 223, 146, 0.22), transparent 34%),
+    linear-gradient(135deg, rgba(24, 60, 39, 0.95), rgba(41, 110, 67, 0.9));
+  color: #f3fff1;
+}
+
+.topbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(212, 255, 211, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 255, 211, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+.topbar > * {
+  position: relative;
+  z-index: 1;
 }
 
 .eyebrow,
@@ -97,6 +122,10 @@ select {
   text-transform: uppercase;
   color: var(--primary);
   font-weight: 700;
+}
+
+.topbar .eyebrow {
+  color: #bdf4b5;
 }
 
 .topbar h1,
@@ -115,7 +144,7 @@ select {
 .topbar-copy {
   margin-top: 14px;
   max-width: 58ch;
-  color: var(--muted);
+  color: rgba(243, 255, 241, 0.82);
   line-height: 1.68;
 }
 
@@ -137,14 +166,14 @@ select {
 }
 
 .status-label {
-  background: rgba(37, 95, 71, 0.08);
-  color: var(--primary-strong);
+  background: rgba(214, 255, 210, 0.14);
+  color: #d8ffd0;
 }
 
 .status-chip {
   min-width: 112px;
-  background: rgba(37, 95, 71, 0.12);
-  color: var(--primary-strong);
+  background: rgba(214, 255, 210, 0.16);
+  color: #efffeb;
   font-weight: 700;
 }
 

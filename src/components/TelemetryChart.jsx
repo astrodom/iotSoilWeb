@@ -10,6 +10,8 @@ import {
 } from "recharts";
 
 function TelemetryChart({ data }) {
+  const isSingleDayDataset = hasSingleDayRange(data);
+
   return (
     <ResponsiveContainer width="100%" height={460}>
       <AreaChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
@@ -27,7 +29,7 @@ function TelemetryChart({ data }) {
         <XAxis
           dataKey="timestamp"
           tick={{ fill: "#3a3024", fontSize: 12, fontWeight: 700 }}
-          tickFormatter={formatTimestampTick}
+          tickFormatter={(value) => formatTimestampTick(value, isSingleDayDataset)}
           minTickGap={24}
           stroke="rgba(77, 58, 33, 0.18)"
         />
@@ -110,15 +112,49 @@ function ChartTooltip({ active, payload, label }) {
   );
 }
 
-function formatTimestampTick(value) {
-  const parsed = Date.parse(value.replaceAll(".", "-").replace(" ", "T").replace(/\//g, "-"));
+function formatTimestampTick(value, isSingleDayDataset) {
+  const parsed = parseTimestamp(value);
 
-  if (Number.isNaN(parsed)) {
+  if (parsed === null) {
+    if (isSingleDayDataset) {
+      const timeMatch = value.match(/(\d{1,2}):(\d{2})/);
+      return timeMatch ? `${timeMatch[1].padStart(2, "0")}:${timeMatch[2]}` : value;
+    }
+
     return value.length > 10 ? value.slice(5, 10) : value;
   }
 
   const date = new Date(parsed);
-  return `${date.getMonth() + 1}/${date.getDate()}`;
+
+  if (isSingleDayDataset) {
+    return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+  }
+
+  return `${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function hasSingleDayRange(data) {
+  const parsedDates = data.map((item) => parseTimestamp(item.timestamp)).filter((value) => value !== null);
+
+  if (!parsedDates.length) {
+    return false;
+  }
+
+  const first = new Date(parsedDates[0]);
+  return parsedDates.every((value) => {
+    const current = new Date(value);
+
+    return (
+      current.getFullYear() === first.getFullYear() &&
+      current.getMonth() === first.getMonth() &&
+      current.getDate() === first.getDate()
+    );
+  });
+}
+
+function parseTimestamp(value) {
+  const parsed = Date.parse(value.replaceAll(".", "-").replace(" ", "T").replace(/\//g, "-"));
+  return Number.isNaN(parsed) ? null : parsed;
 }
 
 export default TelemetryChart;
