@@ -46,6 +46,7 @@ function App() {
   });
   const [rows, setRows] = useState([]);
   const [lastPayload, setLastPayload] = useState(null);
+  const [rainfallSeries, setRainfallSeries] = useState([]);
   const [weather, setWeather] = useState(createInitialWeatherState);
   const [viewWindow, setViewWindow] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -122,6 +123,8 @@ function App() {
     visibleRows = visibleRows.slice(-Number(viewWindow));
   }
 
+  const chartRows = mergeRainfallIntoRows(visibleRows, rainfallSeries);
+
   const metrics = deriveMetrics(rows);
   const insights = deriveInsights(rows, visibleRows, lastPayload, viewWindow, deferredSearchTerm);
   const seasonBands = buildSeasonBands(visibleRows);
@@ -196,6 +199,7 @@ function App() {
     });
     setRows([]);
     setLastPayload(null);
+    setRainfallSeries([]);
     setViewWindow("all");
     setSearchTerm("");
     setSelectedMonthKey("");
@@ -230,29 +234,33 @@ function App() {
     });
 
     try {
-      const response = await fetch(API_ENDPOINT, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          start_date: payload.start_date,
-          end_date: payload.end_date,
-          device_id: payload.device_id,
+      const [sensorResponse, rainfallData] = await Promise.all([
+        fetch(API_ENDPOINT, {
+          method: "POST",
+          mode: "cors",
+          cache: "no-cache",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            start_date: payload.start_date,
+            end_date: payload.end_date,
+            device_id: payload.device_id,
+          }),
         }),
-      });
+        fetchRainfallHistory(targetForm),
+      ]);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+      if (!sensorResponse.ok) {
+        throw new Error(`HTTP ${sensorResponse.status}`);
       }
 
-      const data = normalizeRows(await response.json());
+      const data = normalizeRows(await sensorResponse.json());
       startTransition(() => {
         setRows(data);
         setLastPayload(payload);
+        setRainfallSeries(rainfallData);
       });
       void refreshWeather();
       setStatus({ label: "ONLINE", tone: "" });
@@ -265,6 +273,7 @@ function App() {
       startTransition(() => {
         setRows([]);
         setLastPayload(null);
+        setRainfallSeries([]);
       });
       setStatus({ label: "REQUEST FAIL", tone: "error" });
       setMessage({
@@ -426,7 +435,7 @@ function App() {
         <div className="chart-wrap chart-wrap-wide">
           {visibleRows.length ? (
             <Suspense fallback={<EmptyPanel message="차트 모듈을 로딩 중입니다." />}>
-              <TelemetryChart data={visibleRows} />
+              <TelemetryChart data={chartRows} />
             </Suspense>
           ) : (
             <EmptyPanel message={insights.chartEmptyMessage} />
@@ -621,6 +630,32 @@ function createInitialWeatherState() {
   };
 }
 
+async function fetchRainfallHistory(targetForm) {
+  if (!WEATHER_API_ENDPOINT) {
+    return [];
+  }
+
+  const requestUrl = new URL(WEATHER_API_ENDPOINT);
+  requestUrl.searchParams.set("startDate", targetForm.startDate);
+  requestUrl.searchParams.set("endDate", targetForm.endDate);
+
+  const response = await fetch(requestUrl, {
+    method: "GET",
+    mode: "cors",
+    cache: "no-cache",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Rainfall HTTP ${response.status}`);
+  }
+
+  const payload = await response.json();
+  return normalizeRainfallSeries(payload);
+}
+
 function normalizeWeatherState(payload) {
   const rainfall = payload?.precipitation;
   const locationName = payload?.location?.name || WEATHER_LOCATION_NAME || "서울";
@@ -631,6 +666,17 @@ function normalizeWeatherState(payload) {
     value: rainfall?.displayValue || formatRainfallValue(rainfall?.value, rainfall?.unit),
     subtext: observedAt ? `${locationName} | ${observedAt}` : `${locationName} | 현재 강수량`,
   };
+}
+
+function normalizeRainfallSeries(payload) {
+  const series = Array.isArray(payload?.series) ? payload.series : [];
+
+  return series
+    .map((item) => ({
+      timestamp: item.timestamp,
+      rainfall: typeof item.rainfall === "number" ? item.rainfall : toNumber(item.rainfall),
+    }))
+    .filter((item) => item.timestamp);
 }
 
 function EmptyPanel({ message }) {
@@ -922,6 +968,21 @@ function normalizeRows(responseData) {
   return rows;
 }
 
+function mergeRainfallIntoRows(rows, rainfallSeries) {
+  if (!rows.length) {
+    return [];
+  }
+
+  const rainfallMap = new Map(
+    rainfallSeries.map((item) => [toHourBucket(item.timestamp), item.rainfall]),
+  );
+
+  return rows.map((row) => ({
+    ...row,
+    rainfall: rainfallMap.get(toHourBucket(row.timestamp)) ?? null,
+  }));
+}
+
 function parseBody(responseData) {
   const rawBody =
     responseData && Object.prototype.hasOwnProperty.call(responseData, "body")
@@ -1044,6 +1105,26 @@ function parseTimestamp(value) {
   const normalized = normalizeTimestamp(value);
   const parsed = Date.parse(normalized);
   return Number.isNaN(parsed) ? null : parsed;
+}
+
+function toHourBucket(value) {
+  const parsed = parseTimestamp(value);
+
+  if (parsed !== null) {
+    const date = new Date(parsed);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+      date.getDate(),
+    ).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:00`;
+  }
+
+  const match = String(value).match(/(\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})[ T-](\d{1,2})/);
+  if (!match) {
+    return String(value);
+  }
+
+  return `${match[1]}-${String(Number(match[2])).padStart(2, "0")}-${String(
+    Number(match[3]),
+  ).padStart(2, "0")} ${String(Number(match[4])).padStart(2, "0")}:00`;
 }
 
 function normalizeTimestamp(value) {

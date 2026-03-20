@@ -3,6 +3,7 @@ import {
   AreaChart,
   CartesianGrid,
   Legend,
+  Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -13,13 +14,15 @@ const TEMP_COLOR = "#49c9ff";
 const TEMP_AXIS_COLOR = "#144f79";
 const VWC_COLOR = "#b5ff46";
 const VWC_AXIS_COLOR = "#2f5f17";
+const RAIN_COLOR = "#f28c28";
+const RAIN_AXIS_COLOR = "#8a4b11";
 
 function TelemetryChart({ data }) {
   const isSingleDayDataset = hasSingleDayRange(data);
 
   return (
     <ResponsiveContainer width="100%" height={460}>
-      <AreaChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
+      <AreaChart data={data} margin={{ top: 8, right: 56, left: 8, bottom: 8 }}>
         <defs>
           <linearGradient id="tempFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="rgba(73, 201, 255, 0.45)" />
@@ -69,6 +72,22 @@ function TelemetryChart({ data }) {
             dx: 6,
           }}
         />
+        <YAxis
+          yAxisId="rain"
+          orientation="right"
+          width={68}
+          tick={{ fill: RAIN_AXIS_COLOR, fontSize: 12, fontWeight: 800 }}
+          stroke={RAIN_AXIS_COLOR}
+          label={{
+            value: "Rainfall (mm)",
+            angle: 90,
+            position: "insideRight",
+            fill: RAIN_AXIS_COLOR,
+            fontSize: 12,
+            fontWeight: 800,
+            dx: 44,
+          }}
+        />
         <Tooltip content={<ChartTooltip />} />
         <Legend wrapperStyle={{ color: "#c7f6ff", fontSize: "12px" }} />
         <Area
@@ -91,6 +110,16 @@ function TelemetryChart({ data }) {
           strokeWidth={2}
           connectNulls
         />
+        <Line
+          yAxisId="rain"
+          type="monotone"
+          dataKey="rainfall"
+          name="Rainfall"
+          stroke={RAIN_COLOR}
+          strokeWidth={2}
+          dot={false}
+          connectNulls
+        />
       </AreaChart>
     </ResponsiveContainer>
   );
@@ -109,7 +138,7 @@ function ChartTooltip({ active, payload, label }) {
           <span>{entry.name}</span>
           <strong>
             {entry.value}
-            {entry.dataKey === "vwc" ? "%" : "°C"}
+            {getTooltipUnit(entry.dataKey)}
           </strong>
         </p>
       ))}
@@ -136,6 +165,18 @@ function formatTimestampTick(value, isSingleDayDataset) {
   }
 
   return `${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function getTooltipUnit(dataKey) {
+  if (dataKey === "vwc") {
+    return "%";
+  }
+
+  if (dataKey === "rainfall") {
+    return " mm";
+  }
+
+  return "°C";
 }
 
 function hasSingleDayRange(data) {
