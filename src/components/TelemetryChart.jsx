@@ -10,12 +10,12 @@ import {
   YAxis,
 } from "recharts";
 
-const TEMP_COLOR = "#49c9ff";
-const TEMP_AXIS_COLOR = "#144f79";
+const TEMP_COLOR = "#d95b43";
+const TEMP_AXIS_COLOR = "#8c2f1c";
 const VWC_COLOR = "#b5ff46";
 const VWC_AXIS_COLOR = "#2f5f17";
-const RAIN_COLOR = "#2f80ed";
-const RAIN_AXIS_COLOR = "#164f9c";
+const RAIN_COLOR = "#1f5fbf";
+const RAIN_AXIS_COLOR = "#123f80";
 
 function TelemetryChart({ data }) {
   const isSingleDayDataset = hasSingleDayRange(data);
