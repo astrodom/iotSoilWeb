@@ -19,6 +19,8 @@ const RAIN_AXIS_COLOR = "#123f80";
 
 function TelemetryChart({ data }) {
   const isSingleDayDataset = hasSingleDayRange(data);
+  const rainAxisMax = getRainAxisMax(data);
+  const rainTicks = buildRainTicks(rainAxisMax);
 
   return (
     <div className="telemetry-chart">
@@ -74,6 +76,8 @@ function TelemetryChart({ data }) {
             width={60}
             tick={{ fill: RAIN_AXIS_COLOR, fontSize: 12, fontWeight: 800 }}
             stroke={RAIN_AXIS_COLOR}
+            domain={[0, rainAxisMax]}
+            ticks={rainTicks}
           />
           <Tooltip content={<ChartTooltip />} />
           <Legend wrapperStyle={{ color: "#c7f6ff", fontSize: "12px" }} />
@@ -165,6 +169,40 @@ function getTooltipUnit(dataKey) {
   }
 
   return "°C";
+}
+
+function getRainAxisMax(data) {
+  const rainfallValues = data
+    .map((item) => item.rainfall)
+    .filter((value) => typeof value === "number" && Number.isFinite(value));
+
+  const maxRainfall = rainfallValues.length ? Math.max(...rainfallValues) : 0;
+  const target = Math.max(20, maxRainfall);
+
+  if (target <= 20) {
+    return 20;
+  }
+
+  if (target <= 50) {
+    return Math.ceil(target / 5) * 5;
+  }
+
+  if (target <= 100) {
+    return Math.ceil(target / 10) * 10;
+  }
+
+  return Math.ceil(target / 20) * 20;
+}
+
+function buildRainTicks(axisMax) {
+  const step = axisMax <= 20 ? 5 : axisMax <= 50 ? 5 : axisMax <= 100 ? 10 : 20;
+  const ticks = [];
+
+  for (let value = 0; value <= axisMax; value += step) {
+    ticks.push(value);
+  }
+
+  return ticks;
 }
 
 function hasSingleDayRange(data) {
