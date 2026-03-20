@@ -39,7 +39,7 @@ function App() {
   const [activeRange, setActiveRange] = useState("month");
   const [status, setStatus] = useState({ label: "READY", tone: "" });
   const [message, setMessage] = useState({
-    text: "날짜는 안전하게 처리한 뒤 API 형식인 yyyy.mm.dd로 변환됩니다.",
+    text: "",
     error: false,
   });
   const [rows, setRows] = useState([]);
@@ -125,12 +125,15 @@ function App() {
 
   const handleRangeClick = (rangeKey) => {
     const range = buildQuickRange(rangeKey);
-    setActiveRange(rangeKey);
-    setForm((current) => ({
-      ...current,
+    const nextForm = {
+      ...form,
       startDate: range.startDate,
       endDate: range.endDate,
-    }));
+    };
+
+    setActiveRange(rangeKey);
+    setForm(nextForm);
+    void executeQuery(nextForm);
   };
 
   const handleReset = () => {
@@ -154,10 +157,8 @@ function App() {
     });
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    const validationError = validateForm(form);
+  const executeQuery = async (targetForm) => {
+    const validationError = validateForm(targetForm);
     if (validationError) {
       setStatus({ label: "INPUT ERROR", tone: "error" });
       setMessage({ text: validationError, error: true });
@@ -165,11 +166,11 @@ function App() {
     }
 
     const payload = {
-      start_date: toApiDate(form.startDate),
-      end_date: toApiDate(addDays(form.endDate, 1)),
-      device_id: form.deviceId.trim(),
-      rawStartDate: form.startDate,
-      rawEndDate: form.endDate,
+      start_date: toApiDate(targetForm.startDate),
+      end_date: toApiDate(addDays(targetForm.endDate, 1)),
+      device_id: targetForm.deviceId.trim(),
+      rawStartDate: targetForm.startDate,
+      rawEndDate: targetForm.endDate,
     };
 
     setIsLoading(true);
@@ -225,6 +226,11 @@ function App() {
     }
   };
 
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    await executeQuery(form);
+  };
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -269,6 +275,7 @@ function App() {
               type="button"
               className={`range-chip ${activeRange === range.key ? "is-active" : ""}`.trim()}
               onClick={() => handleRangeClick(range.key)}
+              disabled={isLoading}
             >
               {range.label}
             </button>
@@ -287,7 +294,7 @@ function App() {
           </label>
 
           <label className="field">
-            <span>센서 프리셋</span>
+            <span>설치 장소</span>
             <select value={form.sensorPreset} onChange={handleFormChange("sensorPreset")}>
               <option value="22096028">22096028 | lounge 앞 화단</option>
               <option value="22096027">22096027 | 원형 화단</option>
@@ -440,7 +447,7 @@ function App() {
           </div>
         </div>
 
-        <p className="support-text">{insights.resultsHint}</p>
+        <p className="support-text support-text-inline">{insights.resultsHint}</p>
 
         {monthlySummaries.length ? (
           <div className="monthly-layout">
@@ -940,9 +947,14 @@ function toApiDate(dateValue) {
 }
 
 function parseTimestamp(value) {
-  const normalized = value.replaceAll(".", "-").replace(" ", "T").replace(/\//g, "-");
+  const normalized = normalizeTimestamp(value);
   const parsed = Date.parse(normalized);
   return Number.isNaN(parsed) ? null : parsed;
+}
+
+function normalizeTimestamp(value) {
+  const base = String(value).trim().replaceAll("/", "-").replaceAll(".", "-");
+  return base.replace(/^(\d{4}-\d{2}-\d{2})[-\s](\d{2}:\d{2}(?::\d{2})?)$/, "$1T$2");
 }
 
 function inferMonthFromString(value) {

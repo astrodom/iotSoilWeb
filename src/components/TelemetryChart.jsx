@@ -153,8 +153,18 @@ function hasSingleDayRange(data) {
 }
 
 function parseTimestamp(value) {
-  const parsed = Date.parse(value.replaceAll(".", "-").replace(" ", "T").replace(/\//g, "-"));
+  const normalized = normalizeTimestamp(value);
+  const parsed = Date.parse(normalized);
   return Number.isNaN(parsed) ? null : parsed;
+}
+
+function normalizeTimestamp(value) {
+  const base = String(value).trim().replaceAll("/", "-").replaceAll(".", "-");
+  const withTimeSeparator = base.replace(
+    /^(\d{4}-\d{2}-\d{2})[-\s](\d{2}:\d{2}(?::\d{2})?)$/,
+    "$1T$2",
+  );
+  return withTimeSeparator;
 }
 
 export default TelemetryChart;

@@ -220,6 +220,11 @@ select {
   text-align: right;
 }
 
+.support-text-inline {
+  max-width: none;
+  white-space: nowrap;
+}
+
 .support-text.error {
   color: var(--danger);
 }
@@ -834,6 +839,10 @@ tbody tr:nth-child(even):not(.season-divider) {
   .support-text {
     text-align: left;
     max-width: none;
+  }
+
+  .support-text-inline {
+    white-space: normal;
   }
 
   .season-strip {
