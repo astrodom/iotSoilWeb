@@ -9,6 +9,11 @@ import {
   YAxis,
 } from "recharts";
 
+const TEMP_COLOR = "#49c9ff";
+const TEMP_AXIS_COLOR = "#144f79";
+const VWC_COLOR = "#b5ff46";
+const VWC_AXIS_COLOR = "#2f5f17";
+
 function TelemetryChart({ data }) {
   const isSingleDayDataset = hasSingleDayRange(data);
 
@@ -36,15 +41,15 @@ function TelemetryChart({ data }) {
         <YAxis
           yAxisId="temp"
           width={68}
-          tick={{ fill: "#2d5974", fontSize: 12, fontWeight: 700 }}
-          stroke="rgba(77, 58, 33, 0.18)"
+          tick={{ fill: TEMP_AXIS_COLOR, fontSize: 12, fontWeight: 800 }}
+          stroke={TEMP_AXIS_COLOR}
           label={{
             value: "Temperature (°C)",
             angle: -90,
             position: "insideLeft",
-            fill: "#2d5974",
+            fill: TEMP_AXIS_COLOR,
             fontSize: 12,
-            fontWeight: 700,
+            fontWeight: 800,
             dx: -6,
           }}
         />
@@ -52,15 +57,15 @@ function TelemetryChart({ data }) {
           yAxisId="vwc"
           orientation="right"
           width={62}
-          tick={{ fill: "#426734", fontSize: 12, fontWeight: 700 }}
-          stroke="rgba(77, 58, 33, 0.18)"
+          tick={{ fill: VWC_AXIS_COLOR, fontSize: 12, fontWeight: 800 }}
+          stroke={VWC_AXIS_COLOR}
           label={{
             value: "VWC (%)",
             angle: 90,
             position: "insideRight",
-            fill: "#426734",
+            fill: VWC_AXIS_COLOR,
             fontSize: 12,
-            fontWeight: 700,
+            fontWeight: 800,
             dx: 6,
           }}
         />
@@ -71,7 +76,7 @@ function TelemetryChart({ data }) {
           type="monotone"
           dataKey="temp"
           name="Temperature"
-          stroke="#49c9ff"
+          stroke={TEMP_COLOR}
           fill="url(#tempFill)"
           strokeWidth={2}
           connectNulls
@@ -81,7 +86,7 @@ function TelemetryChart({ data }) {
           type="monotone"
           dataKey="vwc"
           name="VWC"
-          stroke="#b5ff46"
+          stroke={VWC_COLOR}
           fill="url(#vwcFill)"
           strokeWidth={2}
           connectNulls

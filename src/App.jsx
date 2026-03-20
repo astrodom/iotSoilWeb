@@ -1,6 +1,8 @@
 import { Suspense, lazy, startTransition, useDeferredValue, useEffect, useState } from "react";
 
 const API_ENDPOINT = "https://puis3e72h4.execute-api.ap-northeast-2.amazonaws.com/dev";
+const WEATHER_API_ENDPOINT = (import.meta.env.VITE_RAINFALL_API_ENDPOINT ?? "").trim();
+const WEATHER_LOCATION_NAME = (import.meta.env.VITE_RAINFALL_LOCATION_NAME ?? "").trim();
 const CURRENT_YEAR = new Date().getFullYear();
 const SENSOR_PRESETS = [
   { id: "22096028", label: "lounge 앞 화단" },
@@ -44,12 +46,51 @@ function App() {
   });
   const [rows, setRows] = useState([]);
   const [lastPayload, setLastPayload] = useState(null);
+  const [weather, setWeather] = useState(createInitialWeatherState);
   const [viewWindow, setViewWindow] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMonthKey, setSelectedMonthKey] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const deferredSearchTerm = useDeferredValue(searchTerm);
+
+  const refreshWeather = async () => {
+    if (!WEATHER_API_ENDPOINT) {
+      setWeather(createInitialWeatherState());
+      return;
+    }
+
+    setWeather((current) => ({
+      ...current,
+      status: "loading",
+      value: current.status === "ready" ? current.value : "...",
+      subtext: "기상청 강수 데이터를 조회 중입니다.",
+    }));
+
+    try {
+      const response = await fetch(WEATHER_API_ENDPOINT, {
+        method: "GET",
+        mode: "cors",
+        cache: "no-cache",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      setWeather(normalizeWeatherState(await response.json()));
+    } catch (error) {
+      console.error(error);
+      setWeather({
+        status: "error",
+        value: "-",
+        subtext: "강수 API 조회 실패",
+      });
+    }
+  };
 
   useEffect(() => {
     const nextRange = buildQuickRange("month");
@@ -58,6 +99,14 @@ function App() {
       startDate: nextRange.startDate,
       endDate: nextRange.endDate,
     }));
+  }, []);
+
+  useEffect(() => {
+    if (!WEATHER_API_ENDPOINT) {
+      return;
+    }
+
+    void refreshWeather();
   }, []);
 
   let visibleRows = rows;
@@ -205,6 +254,7 @@ function App() {
         setRows(data);
         setLastPayload(payload);
       });
+      void refreshWeather();
       setStatus({ label: "ONLINE", tone: "" });
       setMessage({
         text: `센서 ${payload.device_id} 데이터를 성공적으로 불러왔습니다.`,
@@ -327,6 +377,7 @@ function App() {
       </section>
 
       <section className="metrics-grid" aria-label="Summary metrics">
+        <MetricPanel label="Rainfall" value={weather.value} subtext={weather.subtext} />
         <MetricPanel label="Samples" value={metrics.sampleCount} subtext="조회된 전체 레코드 수" />
         <MetricPanel label="Latest Temp" value={metrics.latestTemp} subtext="가장 최근 온도" />
         <MetricPanel label="Latest VWC" value={metrics.latestVwc} subtext="가장 최근 수분 함량" />
@@ -552,6 +603,34 @@ function MetricPanel({ label, value, subtext }) {
       <p className="metric-subtext">{subtext}</p>
     </article>
   );
+}
+
+function createInitialWeatherState() {
+  if (!WEATHER_API_ENDPOINT) {
+    return {
+      status: "disabled",
+      value: "연동 전",
+      subtext: "VITE_RAINFALL_API_ENDPOINT 설정 필요",
+    };
+  }
+
+  return {
+    status: "idle",
+    value: "-",
+    subtext: "기상청 강수 데이터 대기 중",
+  };
+}
+
+function normalizeWeatherState(payload) {
+  const rainfall = payload?.precipitation;
+  const locationName = payload?.location?.name || WEATHER_LOCATION_NAME || "서울";
+  const observedAt = payload?.observedAt || payload?.source?.observedAt;
+
+  return {
+    status: "ready",
+    value: rainfall?.displayValue || formatRainfallValue(rainfall?.value, rainfall?.unit),
+    subtext: observedAt ? `${locationName} | ${observedAt}` : `${locationName} | 현재 강수량`,
+  };
 }
 
 function EmptyPanel({ message }) {
@@ -831,11 +910,13 @@ function addDays(dateValue, days) {
 
 function normalizeRows(responseData) {
   const body = parseBody(responseData);
-  const rows = Object.entries(body).map(([timestamp, values]) => ({
-    timestamp,
-    temp: toNumber(values ? values.temp : undefined),
-    vwc: toNumber(values ? values.vwc : undefined),
-  }));
+  const rows = Object.entries(body)
+    .map(([timestamp, values]) => ({
+      timestamp,
+      temp: toNumber(values ? values.temp : undefined),
+      vwc: toNumber(values ? values.vwc : undefined),
+    }))
+    .filter((row) => !(row.temp === 0 && row.vwc === 0));
 
   rows.sort((left, right) => compareTimestamps(left.timestamp, right.timestamp));
   return rows;
@@ -882,6 +963,19 @@ function exportVisibleRows(visibleRows, lastPayload) {
 
 function formatMetric(value, unit) {
   return value === null ? "-" : `${value.toFixed(2)}${unit}`;
+}
+
+function formatRainfallValue(value, unit = "mm") {
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return `${value.toFixed(1)} ${unit}`;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? `${parsed.toFixed(1)} ${unit}` : String(value);
 }
 
 function formatBand(values, unit) {

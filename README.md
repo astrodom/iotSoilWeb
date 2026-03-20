@@ -16,6 +16,8 @@
 - `src/main.jsx`: React bootstrap
 - `src/App.jsx`: HUD UI, 상태 관리, API 호출, 데이터 계산
 - `src/styles.css`: HUD 스타일과 반응형 레이아웃
+- `backend/weather-proxy/lambda_function.py`: 기상청 강수량 프록시 Lambda
+- `backend/weather-proxy/README.md`: Lambda / API Gateway 연결 가이드
 - `index_bak_20230620B.html`: 기존 백업 페이지
 
 ## Run
@@ -44,6 +46,30 @@ npm run build
 - 조회 결과는 최근 24건, 72건, 168건, 전체 기준으로 다시 볼 수 있습니다.
 - 차트 아래에는 겨울/봄/여름/가을 기준의 계절 구간 요약이 표시됩니다.
 - 상세 테이블은 timestamp 검색, 현재 보기 CSV 내보내기, 계절 컬럼 및 계절별 그룹 헤더를 지원합니다.
+- `VITE_RAINFALL_API_ENDPOINT`가 설정되면 기상청 현재 강수량 카드도 함께 표시합니다.
+
+## Weather Proxy
+
+강수량은 프런트가 기상청 API를 직접 호출하지 않고 별도 `Lambda + API Gateway`를 통해 받도록 구성했습니다.
+
+프런트 env 예시:
+
+```bash
+VITE_RAINFALL_API_ENDPOINT=https://your-api-id.execute-api.ap-northeast-2.amazonaws.com/prod/weather/current
+VITE_RAINFALL_LOCATION_NAME=HDC Labs 타워
+```
+
+Lambda env 예시:
+
+```bash
+KMA_SERVICE_KEY=your-service-key
+KMA_DEFAULT_NX=60
+KMA_DEFAULT_NY=127
+LOCATION_NAME=HDC Labs 타워
+ALLOW_ORIGIN=https://main.d2nx27l97wl6iy.amplifyapp.com
+```
+
+세부 배포 방법은 `backend/weather-proxy/README.md`를 보면 됩니다.
 
 ## API Contract Assumption
 
