@@ -234,29 +234,39 @@ function App() {
     });
 
     try {
-      const [sensorResponse, rainfallData] = await Promise.all([
-        fetch(API_ENDPOINT, {
-          method: "POST",
-          mode: "cors",
-          cache: "no-cache",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({
-            start_date: payload.start_date,
-            end_date: payload.end_date,
-            device_id: payload.device_id,
-          }),
+      const sensorResponse = await fetch(API_ENDPOINT, {
+        method: "POST",
+        mode: "cors",
+        cache: "no-cache",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          start_date: payload.start_date,
+          end_date: payload.end_date,
+          device_id: payload.device_id,
         }),
-        fetchRainfallHistory(targetForm),
-      ]);
+      });
 
       if (!sensorResponse.ok) {
         throw new Error(`HTTP ${sensorResponse.status}`);
       }
 
       const data = normalizeRows(await sensorResponse.json());
+      let rainfallData = [];
+
+      try {
+        rainfallData = await fetchRainfallHistory(targetForm);
+      } catch (rainfallError) {
+        console.error(rainfallError);
+        setWeather({
+          status: "error",
+          value: "-",
+          subtext: "강우량 이력 조회 실패",
+        });
+      }
+
       startTransition(() => {
         setRows(data);
         setLastPayload(payload);

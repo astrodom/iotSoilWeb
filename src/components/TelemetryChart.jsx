@@ -14,15 +14,15 @@ const TEMP_COLOR = "#49c9ff";
 const TEMP_AXIS_COLOR = "#144f79";
 const VWC_COLOR = "#b5ff46";
 const VWC_AXIS_COLOR = "#2f5f17";
-const RAIN_COLOR = "#f28c28";
-const RAIN_AXIS_COLOR = "#8a4b11";
+const RAIN_COLOR = "#2f80ed";
+const RAIN_AXIS_COLOR = "#164f9c";
 
 function TelemetryChart({ data }) {
   const isSingleDayDataset = hasSingleDayRange(data);
 
   return (
     <ResponsiveContainer width="100%" height={460}>
-      <ComposedChart data={data} margin={{ top: 8, right: 56, left: 8, bottom: 8 }}>
+      <ComposedChart data={data} margin={{ top: 8, right: 94, left: 8, bottom: 8 }}>
         <defs>
           <linearGradient id="tempFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="rgba(73, 201, 255, 0.45)" />
@@ -59,7 +59,7 @@ function TelemetryChart({ data }) {
         <YAxis
           yAxisId="vwc"
           orientation="right"
-          width={62}
+          width={54}
           tick={{ fill: VWC_AXIS_COLOR, fontSize: 12, fontWeight: 800 }}
           stroke={VWC_AXIS_COLOR}
           label={{
@@ -67,25 +67,25 @@ function TelemetryChart({ data }) {
             angle: 90,
             position: "insideRight",
             fill: VWC_AXIS_COLOR,
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 800,
-            dx: 6,
+            dx: -8,
           }}
         />
         <YAxis
           yAxisId="rain"
           orientation="right"
-          width={68}
+          width={60}
           tick={{ fill: RAIN_AXIS_COLOR, fontSize: 12, fontWeight: 800 }}
           stroke={RAIN_AXIS_COLOR}
           label={{
             value: "Rainfall (mm)",
             angle: 90,
-            position: "insideRight",
+            position: "right",
             fill: RAIN_AXIS_COLOR,
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 800,
-            dx: 44,
+            dx: 22,
           }}
         />
         <Tooltip content={<ChartTooltip />} />

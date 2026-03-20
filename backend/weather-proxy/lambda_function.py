@@ -325,7 +325,7 @@ def request_asos_range_series(
 ) -> List[Dict[str, Any]]:
     combined: List[Dict[str, Any]] = []
 
-    for chunk_start, chunk_end in split_date_range(start_date, end_date, 30):
+    for chunk_start, chunk_end in split_date_range(start_date, end_date, 10):
         payload = request_asos_hourly_rainfall(
             service_key=service_key,
             station_id=station_id,
