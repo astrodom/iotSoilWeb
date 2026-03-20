@@ -262,6 +262,12 @@ function App() {
         setLastPayload(payload);
         setRainfallSeries(rainfallData);
       });
+      const fallbackWeather = deriveWeatherStateFromRainfallSeries(rainfallData);
+      if (fallbackWeather) {
+        startTransition(() => {
+          setWeather(fallbackWeather);
+        });
+      }
       void refreshWeather();
       setStatus({ label: "ONLINE", tone: "" });
       setMessage({
@@ -677,6 +683,32 @@ function normalizeRainfallSeries(payload) {
       rainfall: typeof item.rainfall === "number" ? item.rainfall : toNumber(item.rainfall),
     }))
     .filter((item) => item.timestamp);
+}
+
+function deriveWeatherStateFromRainfallSeries(series) {
+  if (!Array.isArray(series) || !series.length) {
+    return null;
+  }
+
+  const latestItem = [...series]
+    .filter((item) => item.timestamp)
+    .sort((left, right) => compareTimestamps(left.timestamp, right.timestamp))
+    .at(-1);
+
+  if (!latestItem) {
+    return null;
+  }
+
+  const latestValue =
+    latestItem.rainfall === null || latestItem.rainfall === undefined
+      ? "-"
+      : formatRainfallValue(latestItem.rainfall);
+
+  return {
+    status: "ready",
+    value: latestValue,
+    subtext: `${WEATHER_LOCATION_NAME || "서울"} | ${latestItem.timestamp}`,
+  };
 }
 
 function EmptyPanel({ message }) {
