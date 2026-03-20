@@ -1,9 +1,9 @@
 import {
   Area,
-  AreaChart,
+  Bar,
   CartesianGrid,
+  ComposedChart,
   Legend,
-  Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -22,7 +22,7 @@ function TelemetryChart({ data }) {
 
   return (
     <ResponsiveContainer width="100%" height={460}>
-      <AreaChart data={data} margin={{ top: 8, right: 56, left: 8, bottom: 8 }}>
+      <ComposedChart data={data} margin={{ top: 8, right: 56, left: 8, bottom: 8 }}>
         <defs>
           <linearGradient id="tempFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="rgba(73, 201, 255, 0.45)" />
@@ -110,17 +110,17 @@ function TelemetryChart({ data }) {
           strokeWidth={2}
           connectNulls
         />
-        <Line
+        <Bar
           yAxisId="rain"
-          type="monotone"
           dataKey="rainfall"
           name="Rainfall"
-          stroke={RAIN_COLOR}
-          strokeWidth={2}
-          dot={false}
-          connectNulls
+          fill={RAIN_COLOR}
+          fillOpacity={0.72}
+          stroke={RAIN_AXIS_COLOR}
+          strokeWidth={1}
+          barSize={10}
         />
-      </AreaChart>
+      </ComposedChart>
     </ResponsiveContainer>
   );
 }

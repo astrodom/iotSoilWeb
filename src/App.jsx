@@ -680,7 +680,10 @@ function normalizeRainfallSeries(payload) {
   return series
     .map((item) => ({
       timestamp: item.timestamp,
-      rainfall: typeof item.rainfall === "number" ? item.rainfall : toNumber(item.rainfall),
+      rainfall:
+        typeof item.rainfall === "number"
+          ? item.rainfall
+          : toNumber(item.rainfall) ?? 0,
     }))
     .filter((item) => item.timestamp);
 }
@@ -1005,14 +1008,37 @@ function mergeRainfallIntoRows(rows, rainfallSeries) {
     return [];
   }
 
-  const rainfallMap = new Map(
-    rainfallSeries.map((item) => [toHourBucket(item.timestamp), item.rainfall]),
-  );
+  const mergedMap = new Map();
 
-  return rows.map((row) => ({
-    ...row,
-    rainfall: rainfallMap.get(toHourBucket(row.timestamp)) ?? null,
-  }));
+  rows.forEach((row) => {
+    const bucket = toHourBucket(row.timestamp);
+    const current = mergedMap.get(bucket) ?? {
+      timestamp: bucket,
+      temp: null,
+      vwc: null,
+      rainfall: null,
+    };
+
+    current.timestamp = bucket;
+    current.temp = row.temp;
+    current.vwc = row.vwc;
+    mergedMap.set(bucket, current);
+  });
+
+  rainfallSeries.forEach((item) => {
+    const bucket = toHourBucket(item.timestamp);
+    const current = mergedMap.get(bucket) ?? {
+      timestamp: bucket,
+      temp: null,
+      vwc: null,
+      rainfall: null,
+    };
+
+    current.rainfall = item.rainfall;
+    mergedMap.set(bucket, current);
+  });
+
+  return Array.from(mergedMap.values()).sort((left, right) => compareTimestamps(left.timestamp, right.timestamp));
 }
 
 function parseBody(responseData) {
