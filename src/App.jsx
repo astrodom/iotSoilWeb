@@ -1018,6 +1018,8 @@ function mergeRainfallIntoRows(rows, rainfallSeries) {
     return [];
   }
 
+  const sensorStart = parseTimestamp(rows[0].timestamp);
+  const sensorEnd = parseTimestamp(rows[rows.length - 1].timestamp);
   const mergedMap = new Map();
 
   rows.forEach((row) => {
@@ -1036,6 +1038,17 @@ function mergeRainfallIntoRows(rows, rainfallSeries) {
   });
 
   rainfallSeries.forEach((item) => {
+    const rainfallTimestamp = parseTimestamp(item.timestamp);
+
+    if (
+      rainfallTimestamp !== null &&
+      sensorStart !== null &&
+      sensorEnd !== null &&
+      (rainfallTimestamp < sensorStart || rainfallTimestamp > sensorEnd)
+    ) {
+      return;
+    }
+
     const bucket = toHourBucket(item.timestamp);
     const current = mergedMap.get(bucket) ?? {
       timestamp: bucket,

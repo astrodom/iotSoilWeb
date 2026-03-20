@@ -422,6 +422,43 @@ select {
   height: 420px;
 }
 
+.telemetry-chart {
+  position: relative;
+  height: 100%;
+}
+
+.axis-badges {
+  position: absolute;
+  top: 10px;
+  right: 18px;
+  z-index: 2;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  pointer-events: none;
+}
+
+.axis-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 252, 247, 0.9);
+  border: 1px solid rgba(77, 58, 33, 0.12);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.axis-badge.vwc {
+  color: #2f5f17;
+}
+
+.axis-badge.rain {
+  color: #164f9c;
+}
+
 .chart-wrap-wide {
   min-height: 480px;
   height: 480px;
@@ -847,6 +884,12 @@ tbody tr:nth-child(even):not(.season-divider) {
 
   .season-strip {
     flex-direction: column;
+  }
+
+  .axis-badges {
+    right: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .monthly-layout,

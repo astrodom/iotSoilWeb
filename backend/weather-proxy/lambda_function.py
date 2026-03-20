@@ -1,5 +1,6 @@
 import json
 import os
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode, unquote
@@ -323,16 +324,26 @@ def request_asos_hourly_rainfall(
 def request_asos_range_series(
     *, service_key: str, station_id: str, start_date: date, end_date: date
 ) -> List[Dict[str, Any]]:
+    chunk_days = min(max(to_integer(os.environ.get("KMA_RANGE_CHUNK_DAYS")) or 31, 1), 31)
+    ranges = split_date_range(start_date, end_date, chunk_days)
+    max_workers = min(max(to_integer(os.environ.get("KMA_RANGE_MAX_WORKERS")) or 8, 1), 8)
     combined: List[Dict[str, Any]] = []
 
-    for chunk_start, chunk_end in split_date_range(start_date, end_date, 10):
-        payload = request_asos_hourly_rainfall(
-            service_key=service_key,
-            station_id=station_id,
-            start_date=chunk_start.strftime("%Y%m%d"),
-            end_date=chunk_end.strftime("%Y%m%d"),
-        )
-        combined.extend(build_rainfall_series(payload))
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [
+            executor.submit(
+                request_asos_hourly_rainfall,
+                service_key=service_key,
+                station_id=station_id,
+                start_date=chunk_start.strftime("%Y%m%d"),
+                end_date=chunk_end.strftime("%Y%m%d"),
+            )
+            for chunk_start, chunk_end in ranges
+        ]
+
+        for future in futures:
+            payload = future.result()
+            combined.extend(build_rainfall_series(payload))
 
     return combined
 

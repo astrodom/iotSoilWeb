@@ -21,107 +21,95 @@ function TelemetryChart({ data }) {
   const isSingleDayDataset = hasSingleDayRange(data);
 
   return (
-    <ResponsiveContainer width="100%" height={460}>
-      <ComposedChart data={data} margin={{ top: 8, right: 94, left: 8, bottom: 8 }}>
-        <defs>
-          <linearGradient id="tempFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(73, 201, 255, 0.45)" />
-            <stop offset="100%" stopColor="rgba(73, 201, 255, 0.02)" />
-          </linearGradient>
-          <linearGradient id="vwcFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(181, 255, 70, 0.35)" />
-            <stop offset="100%" stopColor="rgba(181, 255, 70, 0.02)" />
-          </linearGradient>
-        </defs>
-        <CartesianGrid stroke="rgba(64, 154, 197, 0.12)" vertical={false} />
-        <XAxis
-          dataKey="timestamp"
-          tick={{ fill: "#3a3024", fontSize: 12, fontWeight: 700 }}
-          tickFormatter={(value) => formatTimestampTick(value, isSingleDayDataset)}
-          minTickGap={24}
-          stroke="rgba(77, 58, 33, 0.18)"
-        />
-        <YAxis
-          yAxisId="temp"
-          width={68}
-          tick={{ fill: TEMP_AXIS_COLOR, fontSize: 12, fontWeight: 800 }}
-          stroke={TEMP_AXIS_COLOR}
-          label={{
-            value: "Temperature (°C)",
-            angle: -90,
-            position: "insideLeft",
-            fill: TEMP_AXIS_COLOR,
-            fontSize: 12,
-            fontWeight: 800,
-            dx: -6,
-          }}
-        />
-        <YAxis
-          yAxisId="vwc"
-          orientation="right"
-          width={54}
-          tick={{ fill: VWC_AXIS_COLOR, fontSize: 12, fontWeight: 800 }}
-          stroke={VWC_AXIS_COLOR}
-          label={{
-            value: "VWC (%)",
-            angle: 90,
-            position: "insideRight",
-            fill: VWC_AXIS_COLOR,
-            fontSize: 11,
-            fontWeight: 800,
-            dx: -8,
-          }}
-        />
-        <YAxis
-          yAxisId="rain"
-          orientation="right"
-          width={60}
-          tick={{ fill: RAIN_AXIS_COLOR, fontSize: 12, fontWeight: 800 }}
-          stroke={RAIN_AXIS_COLOR}
-          label={{
-            value: "Rainfall (mm)",
-            angle: 90,
-            position: "right",
-            fill: RAIN_AXIS_COLOR,
-            fontSize: 11,
-            fontWeight: 800,
-            dx: 22,
-          }}
-        />
-        <Tooltip content={<ChartTooltip />} />
-        <Legend wrapperStyle={{ color: "#c7f6ff", fontSize: "12px" }} />
-        <Area
-          yAxisId="temp"
-          type="monotone"
-          dataKey="temp"
-          name="Temperature"
-          stroke={TEMP_COLOR}
-          fill="url(#tempFill)"
-          strokeWidth={2}
-          connectNulls
-        />
-        <Area
-          yAxisId="vwc"
-          type="monotone"
-          dataKey="vwc"
-          name="VWC"
-          stroke={VWC_COLOR}
-          fill="url(#vwcFill)"
-          strokeWidth={2}
-          connectNulls
-        />
-        <Bar
-          yAxisId="rain"
-          dataKey="rainfall"
-          name="Rainfall"
-          fill={RAIN_COLOR}
-          fillOpacity={0.72}
-          stroke={RAIN_AXIS_COLOR}
-          strokeWidth={1}
-          barSize={10}
-        />
-      </ComposedChart>
-    </ResponsiveContainer>
+    <div className="telemetry-chart">
+      <div className="axis-badges" aria-hidden="true">
+        <span className="axis-badge vwc">VWC (%)</span>
+        <span className="axis-badge rain">Rainfall (mm)</span>
+      </div>
+      <ResponsiveContainer width="100%" height={460}>
+        <ComposedChart data={data} margin={{ top: 8, right: 94, left: 8, bottom: 8 }}>
+          <defs>
+            <linearGradient id="tempFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="rgba(73, 201, 255, 0.45)" />
+              <stop offset="100%" stopColor="rgba(73, 201, 255, 0.02)" />
+            </linearGradient>
+            <linearGradient id="vwcFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="rgba(181, 255, 70, 0.35)" />
+              <stop offset="100%" stopColor="rgba(181, 255, 70, 0.02)" />
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke="rgba(64, 154, 197, 0.12)" vertical={false} />
+          <XAxis
+            dataKey="timestamp"
+            tick={{ fill: "#3a3024", fontSize: 12, fontWeight: 700 }}
+            tickFormatter={(value) => formatTimestampTick(value, isSingleDayDataset)}
+            minTickGap={24}
+            stroke="rgba(77, 58, 33, 0.18)"
+          />
+          <YAxis
+            yAxisId="temp"
+            width={68}
+            tick={{ fill: TEMP_AXIS_COLOR, fontSize: 12, fontWeight: 800 }}
+            stroke={TEMP_AXIS_COLOR}
+            label={{
+              value: "Temperature (°C)",
+              angle: -90,
+              position: "insideLeft",
+              fill: TEMP_AXIS_COLOR,
+              fontSize: 12,
+              fontWeight: 800,
+              dx: -6,
+            }}
+          />
+          <YAxis
+            yAxisId="vwc"
+            orientation="right"
+            width={54}
+            tick={{ fill: VWC_AXIS_COLOR, fontSize: 12, fontWeight: 800 }}
+            stroke={VWC_AXIS_COLOR}
+          />
+          <YAxis
+            yAxisId="rain"
+            orientation="right"
+            width={60}
+            tick={{ fill: RAIN_AXIS_COLOR, fontSize: 12, fontWeight: 800 }}
+            stroke={RAIN_AXIS_COLOR}
+          />
+          <Tooltip content={<ChartTooltip />} />
+          <Legend wrapperStyle={{ color: "#c7f6ff", fontSize: "12px" }} />
+          <Area
+            yAxisId="temp"
+            type="monotone"
+            dataKey="temp"
+            name="Temperature"
+            stroke={TEMP_COLOR}
+            fill="url(#tempFill)"
+            strokeWidth={2}
+            connectNulls
+          />
+          <Area
+            yAxisId="vwc"
+            type="monotone"
+            dataKey="vwc"
+            name="VWC"
+            stroke={VWC_COLOR}
+            fill="url(#vwcFill)"
+            strokeWidth={2}
+            connectNulls
+          />
+          <Bar
+            yAxisId="rain"
+            dataKey="rainfall"
+            name="Rainfall"
+            fill={RAIN_COLOR}
+            fillOpacity={0.72}
+            stroke={RAIN_AXIS_COLOR}
+            strokeWidth={1}
+            barSize={10}
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
